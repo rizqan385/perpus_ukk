@@ -8,7 +8,7 @@ interface Book {
     judul: string;
     pengarang: string;
 }
-
+    
 interface Borrowing {
     id: number;
     tanggal_pinjam: string;
