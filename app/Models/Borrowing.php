@@ -24,6 +24,9 @@ class Borrowing extends Model
         'tanggal_dikembalikan',
         'status',
         'denda',
+        'payment_status',
+        'return_requested_at',
+        'admin_return_approved_at',
     ];
 
     /**
@@ -35,7 +38,10 @@ class Borrowing extends Model
         'tanggal_pinjam' => 'date',
         'tanggal_kembali' => 'date',
         'tanggal_dikembalikan' => 'date',
-        'denda' => 'decimal:2',
+        'denda' => 'integer',
+        'payment_status' => 'string',
+        'return_requested_at' => 'datetime',
+        'admin_return_approved_at' => 'datetime',
     ];
 
     /**
@@ -70,24 +76,41 @@ class Borrowing extends Model
      */
     public function calculateFine(): float
     {
-        if (!$this->isOverdue()) {
+        $returnDate = $this->tanggal_dikembalikan ?? Carbon::now();
+        $deadline = Carbon::parse($this->tanggal_kembali);
+        
+        // Check if return date is after deadline
+        if ($returnDate->lte($deadline)) {
             return 0;
         }
         
-        $returnDate = $this->tanggal_dikembalikan ?? Carbon::now();
-        $daysLate = $returnDate->diffInDays($this->tanggal_kembali);
+        $daysLate = $returnDate->diffInDays($deadline);
         
         return $daysLate * 1000; // Rp 1000 per day
     }
 
     /**
-     * Return the book
+     * Request return - called by student
+     */
+    public function requestReturn(): void
+    {
+        $this->return_requested_at = Carbon::now();
+        $this->status = 'menunggu_pengembalian';
+        $this->save();
+    }
+
+    /**
+     * Return the book - called after admin approval
      */
     public function returnBook(): void
     {
         $this->tanggal_dikembalikan = Carbon::now();
+        $this->admin_return_approved_at = Carbon::now();
         $this->denda = $this->calculateFine();
         $this->status = $this->denda > 0 ? 'terlambat' : 'dikembalikan';
         $this->save();
+        
+        // Kembalikan stok buku
+        $this->book->increment('stok');
     }
 }

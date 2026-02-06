@@ -87,6 +87,9 @@ class BorrowingController extends Controller
             'status' => 'dipinjam',
         ]);
 
+        // Kurangi stok buku
+        $book->decrement('stok');
+
         return back()->with('success', 'Buku "' . $book->judul . '" berhasil dipinjam. Harap kembalikan dalam 7 hari.');
     }
 }

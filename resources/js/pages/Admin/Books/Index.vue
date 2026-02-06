@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { BookOpen, Plus, Search, Edit, Trash2, Eye } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { BookOpen, Calendar, Search, X } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 interface Book {
     id: number;
@@ -13,6 +13,7 @@ interface Book {
     isbn: string | null;
     stok: number;
     cover_image: string | null;
+    created_at: string;
 }
 
 interface Pagination {
@@ -26,13 +27,26 @@ interface Pagination {
 
 const props = defineProps<{
     books: Pagination;
-    filters: { search?: string };
+    filters: { search?: string; from_date?: string; to_date?: string };
 }>();
 
 const search = ref(props.filters.search || '');
+const fromDate = ref(props.filters.from_date || '');
+const toDate = ref(props.filters.to_date || '');
 
-const searchBooks = () => {
-    router.get('/admin/books', { search: search.value }, { preserveState: true });
+const applyFilters = () => {
+    router.get('/admin/books', { 
+        search: search.value, 
+        from_date: fromDate.value,
+        to_date: toDate.value
+    }, { preserveState: true });
+};
+
+const clearFilters = () => {
+    search.value = '';
+    fromDate.value = '';
+    toDate.value = '';
+    router.get('/admin/books', {}, { preserveState: true });
 };
 
 const deleteBook = (book: Book) => {
@@ -58,33 +72,76 @@ const breadcrumbs = [
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Kelola Data Buku</h1>
                     <p class="text-gray-600 dark:text-gray-400">Manajemen koleksi buku perpustakaan</p>
                 </div>
-                <Link
+                <a
                     href="/admin/books/create"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
                 >
-                    <Plus class="h-5 w-5" />
+                    <BookOpen class="h-5 w-5" />
                     Tambah Buku
-                </Link>
+                </a>
             </div>
 
-            <!-- Search -->
-            <div class="flex gap-4">
-                <div class="relative flex-1">
-                    <Search class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                    <input
-                        v-model="search"
-                        type="text"
-                        placeholder="Cari judul, pengarang, atau ISBN..."
-                        class="w-full rounded-lg border bg-white py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                        @keyup.enter="searchBooks"
-                    />
+            <!-- Filters -->
+            <div class="rounded-xl border bg-white p-4 dark:bg-gray-800">
+                <div class="flex flex-col gap-4 md:flex-row md:items-end">
+                    <!-- Search -->
+                    <div class="flex-1">
+                        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Pencarian</label>
+                        <div class="relative">
+                            <Search class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                            <input
+                                v-model="search"
+                                type="text"
+                                placeholder="Cari judul, pengarang, atau ISBN..."
+                                class="w-full rounded-lg border bg-white py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                @keyup.enter="applyFilters"
+                            />
+                        </div>
+                    </div>
+                    
+                    <!-- From Date -->
+                    <div class="w-full md:w-48">
+                        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Dari Tanggal</label>
+                        <div class="relative">
+                            <Calendar class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                            <input
+                                v-model="fromDate"
+                                type="date"
+                                class="w-full rounded-lg border bg-white py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                        </div>
+                    </div>
+                    
+                    <!-- To Date -->
+                    <div class="w-full md:w-48">
+                        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Sampai Tanggal</label>
+                        <div class="relative">
+                            <Calendar class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                            <input
+                                v-model="toDate"
+                                type="date"
+                                class="w-full rounded-lg border bg-white py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                        </div>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="flex gap-2">
+                        <button
+                            @click="applyFilters"
+                            class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                        >
+                            Filter
+                        </button>
+                        <button
+                            v-if="search || fromDate || toDate"
+                            @click="clearFilters"
+                            class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        >
+                            <X class="h-5 w-5" />
+                        </button>
+                    </div>
                 </div>
-                <button
-                    @click="searchBooks"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                >
-                    Cari
-                </button>
             </div>
 
             <!-- Table -->
@@ -127,26 +184,26 @@ const breadcrumbs = [
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
-                                    <Link
+                                    <a
                                         :href="`/admin/books/${book.id}`"
                                         class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700"
                                         title="Lihat"
                                     >
-                                        <Eye class="h-4 w-4" />
-                                    </Link>
-                                    <Link
+                                        👁️
+                                    </a>
+                                    <a
                                         :href="`/admin/books/${book.id}/edit`"
                                         class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-700"
                                         title="Edit"
                                     >
-                                        <Edit class="h-4 w-4" />
-                                    </Link>
+                                        ✏️
+                                    </a>
                                     <button
                                         @click="deleteBook(book)"
                                         class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700"
                                         title="Hapus"
                                     >
-                                        <Trash2 class="h-4 w-4" />
+                                        🗑️
                                     </button>
                                 </div>
                             </td>
@@ -167,7 +224,7 @@ const breadcrumbs = [
                 </p>
                 <div class="flex gap-1">
                     <template v-for="link in books.links" :key="link.label">
-                        <Link
+                        <a
                             v-if="link.url"
                             :href="link.url"
                             :class="[

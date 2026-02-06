@@ -44,12 +44,19 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $unpaidFines = $member->borrowings()
+            ->with('book')
+            ->where('denda', '>', 0)
+            ->whereNull('payment_status')
+            ->get();
+
         return Inertia::render('Siswa/Dashboard', [
             'hasMembership' => true,
             'member' => $member,
             'stats' => $stats,
             'activeBorrowings' => $activeBorrowings,
             'borrowingHistory' => $borrowingHistory,
+            'unpaidFines' => $unpaidFines,
         ]);
     }
 }

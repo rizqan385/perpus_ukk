@@ -17,6 +17,8 @@ interface Borrowing {
     tanggal_dikembalikan: string | null;
     status: string;
     denda: number;
+    return_requested_at: string | null;
+    admin_return_approved_at: string | null;
     book: Book;
 }
 
@@ -27,6 +29,7 @@ interface Member {
 
 const props = defineProps<{
     activeBorrowings: Borrowing[];
+    pendingReturns: Borrowing[];
     returnHistory: Borrowing[];
     member: Member;
 }>();
@@ -58,7 +61,7 @@ const closeConfirmModal = () => {
 
 const confirmReturn = () => {
     if (!selectedBorrowing.value) return;
-    router.post(`/siswa/returns/${selectedBorrowing.value.id}`, {}, {
+    router.post(`/siswa/returns/${selectedBorrowing.value.id}/request`, {}, {
         onSuccess: () => closeConfirmModal()
     });
 };
@@ -158,10 +161,10 @@ const breadcrumbs = [
                             </template>
                             <button
                                 @click="openConfirmModal(borrowing)"
-                                class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+                                class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                             >
                                 <ArrowLeftRight class="h-4 w-4" />
-                                Kembalikan
+                                Request Pengembalian
                             </button>
                         </div>
                     </div>
@@ -170,7 +173,44 @@ const breadcrumbs = [
                 <div v-else class="py-12 text-center">
                     <CheckCircle class="mx-auto mb-4 h-16 w-16 text-green-400" />
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">Tidak Ada Buku yang Dipinjam</h3>
-                    <p class="text-gray-500 dark:text-gray-400">Semua buku telah dikembalikan</p>
+                    <p class="text-gray-500 dark:text-gray-400">Semua buku telah di-request pengembalian atau sudah dikembalikan</p>
+                </div>
+            </div>
+
+            <!-- Pending Returns -->
+            <div v-if="pendingReturns.length > 0" class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:bg-amber-900/20 dark:border-amber-800">
+                <h2 class="mb-4 flex items-center gap-2 text-lg font-semibold text-amber-900 dark:text-amber-100">
+                    <Clock class="h-5 w-5" />
+                    Menunggu Persetujuan Admin
+                </h2>
+                <div class="space-y-3">
+                    <div
+                        v-for="borrowing in pendingReturns"
+                        :key="borrowing.id"
+                        class="flex flex-col gap-4 rounded-xl border border-amber-200 bg-white p-4 md:flex-row md:items-center md:justify-between dark:bg-gray-800 dark:border-amber-700"
+                    >
+                        <div class="flex items-start gap-4">
+                            <div class="rounded-lg bg-amber-100 p-3 dark:bg-amber-900/50">
+                                <BookOpen class="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">{{ borrowing.book.judul }}</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ borrowing.book.pengarang }}</p>
+                                <div class="mt-2 flex flex-wrap items-center gap-3 text-sm">
+                                    <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                                        <Calendar class="h-4 w-4" />
+                                        Request: {{ formatDate(borrowing.return_requested_at || '') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
+                                <Clock class="h-4 w-4" />
+                                Menunggu Persetujuan
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -232,7 +272,7 @@ const breadcrumbs = [
         <Teleport to="body">
             <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                 <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-                    <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Konfirmasi Pengembalian</h3>
+                    <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Request Pengembalian Buku</h3>
                     <div class="mb-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
                         <p class="font-medium text-gray-900 dark:text-white">{{ selectedBorrowing?.book.judul }}</p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedBorrowing?.book.pengarang }}</p>
@@ -244,12 +284,17 @@ const breadcrumbs = [
                                 Buku ini terlambat dikembalikan
                             </p>
                             <p class="mt-1 text-sm text-red-600 dark:text-red-300">
-                                Denda keterlambatan akan dihitung berdasarkan jumlah hari terlambat (Rp 1.000/hari).
+                                Denda keterlambatan akan dihitung berdasarkan jumlah hari terlambat (Rp 1.000/hari) setelah admin menyetujui.
                             </p>
                         </div>
                     </template>
+                    <div class="mb-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            Request pengembalian Anda akan dikirim ke admin untuk disetujui. Buku akan dikembalikan setelah admin menyetujui request Anda.
+                        </p>
+                    </div>
                     <p class="mb-6 text-sm text-gray-600 dark:text-gray-400">
-                        Apakah Anda yakin ingin mengembalikan buku ini?
+                        Apakah Anda yakin ingin melakukan request pengembalian buku ini?
                     </p>
                     <div class="flex gap-3">
                         <button

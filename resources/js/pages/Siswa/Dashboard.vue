@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { BookOpen, ArrowLeftRight, Clock, AlertTriangle, UserPlus, Calendar } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { BookOpen, ArrowLeftRight, Clock, AlertTriangle, UserPlus, Calendar, CreditCard } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 interface Book {
@@ -37,6 +37,7 @@ const props = defineProps<{
     stats?: Stats;
     activeBorrowings: Borrowing[];
     borrowingHistory: Borrowing[];
+    unpaidFines?: Borrowing[];
 }>();
 
 const breadcrumbs = [
@@ -51,12 +52,18 @@ const formatDate = (date: string) => {
     });
 };
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number | string) => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-    }).format(amount);
+    }).format(Number(amount));
+};
+
+const payFine = (borrowing: Borrowing) => {
+    if (confirm(`Apakah Anda yakin ingin membayar denda ${formatCurrency(borrowing.denda)} untuk buku "${borrowing.book.judul}"?`)) {
+        router.post(`/siswa/fines/${borrowing.id}/pay`);
+    }
 };
 </script>
 
@@ -150,6 +157,45 @@ const formatCurrency = (amount: number) => {
                             </div>
                             <div class="rounded-full bg-red-500 p-3">
                                 <AlertTriangle class="h-6 w-6 text-white" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unpaid Fines Alert Section -->
+                <div v-if="unpaidFines && unpaidFines.length > 0" class="rounded-xl border border-red-200 bg-red-50 p-6 dark:bg-red-900/20 dark:border-red-800">
+                    <div class="mb-4 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <AlertTriangle class="h-5 w-5 text-red-600" />
+                            <h2 class="text-lg font-semibold text-red-900 dark:text-red-100">Denda Perlu Dibayar</h2>
+                        </div>
+                        <Link href="/siswa/fines" class="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400">
+                            Lihat Semua &rarr;
+                        </Link>
+                    </div>
+                    <div class="space-y-3">
+                        <div
+                            v-for="fine in unpaidFines"
+                            :key="fine.id"
+                            class="flex items-center justify-between rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800"
+                        >
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">{{ fine.book.judul }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Kembali: {{ formatDate(fine.tanggal_dikembalikan || fine.tanggal_kembali) }}
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-lg font-bold text-red-600 dark:text-red-400">
+                                    {{ formatCurrency(fine.denda) }}
+                                </span>
+                                <button
+                                    @click="payFine(fine)"
+                                    class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                                >
+                                    <CreditCard class="h-4 w-4" />
+                                    Bayar
+                                </button>
                             </div>
                         </div>
                     </div>

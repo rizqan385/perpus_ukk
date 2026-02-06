@@ -36,11 +36,31 @@ class MemberController extends Controller
             $query->where('status', $request->get('status'));
         }
 
+        // Filter members with fines
+        if ($request->get('has_fine') === 'yes') {
+            $query->whereHas('borrowings', function ($q) {
+                $q->where('denda', '>', 0)->whereNull('payment_status');
+            });
+        }
+
         $members = $query->latest()->paginate(10);
+
+        // Add total_fines to each member
+        $members->getCollection()->transform(function ($member) {
+            $member->total_fines = $member->borrowings()
+                ->where('denda', '>', 0)
+                ->whereNull('payment_status')
+                ->sum('denda');
+            $member->pending_fines = $member->borrowings()
+                ->where('denda', '>', 0)
+                ->where('payment_status', 'pending')
+                ->sum('denda');
+            return $member;
+        });
 
         return Inertia::render('Admin/Members/Index', [
             'members' => $members,
-            'filters' => $request->only('search', 'status'),
+            'filters' => $request->only('search', 'status', 'has_fine'),
         ]);
     }
 

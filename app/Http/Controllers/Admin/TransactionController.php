@@ -95,6 +95,9 @@ class TransactionController extends Controller
             'status' => 'dipinjam',
         ]);
 
+        // Kurangi stok buku
+        $book->decrement('stok');
+
         return redirect()->route('admin.transactions.index')
             ->with('success', 'Transaksi peminjaman berhasil dibuat.');
     }
@@ -125,6 +128,26 @@ class TransactionController extends Controller
         $message = 'Buku berhasil dikembalikan.';
         if ($transaction->denda > 0) {
             $message .= ' Denda: Rp ' . number_format($transaction->denda, 0, ',', '.');
+        }
+
+        return redirect()->route('admin.transactions.index')
+            ->with('success', $message);
+    }
+
+    /**
+     * Approve a return request from student.
+     */
+    public function approveReturn(Borrowing $transaction): RedirectResponse
+    {
+        if ($transaction->status !== 'menunggu_pengembalian') {
+            return back()->withErrors(['error' => 'Request pengembalian tidak valid.']);
+        }
+
+        $transaction->returnBook();
+
+        $message = 'Pengembalian buku berhasil disetujui.';
+        if ($transaction->denda > 0) {
+            $message .= ' Denda keterlambatan: Rp ' . number_format($transaction->denda, 0, ',', '.');
         }
 
         return redirect()->route('admin.transactions.index')

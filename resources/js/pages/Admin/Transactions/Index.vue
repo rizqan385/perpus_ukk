@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeftRight, Search, Eye, Trash2, RotateCcw } from 'lucide-vue-next';
+import { ArrowLeftRight, Search, Eye, Trash2, RotateCcw, CheckCircle } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ref } from 'vue';
 
@@ -56,6 +56,12 @@ const searchTransactions = () => {
 const returnBook = (borrowing: Borrowing) => {
     if (confirm(`Konfirmasi pengembalian buku "${borrowing.book.judul}"?`)) {
         router.post(`/admin/transactions/${borrowing.id}/return`);
+    }
+};
+
+const approveReturn = (borrowing: Borrowing) => {
+    if (confirm(`Setujui pengembalian buku "${borrowing.book.judul}" oleh ${borrowing.member.user.name}?`)) {
+        router.post(`/admin/transactions/${borrowing.id}/approve-return`);
     }
 };
 
@@ -126,6 +132,7 @@ const breadcrumbs = [
                 >
                     <option value="">Semua Status</option>
                     <option value="dipinjam">Dipinjam</option>
+                    <option value="menunggu_pengembalian">Menunggu Pengembalian</option>
                     <option value="dikembalikan">Dikembalikan</option>
                     <option value="terlambat">Terlambat</option>
                 </select>
@@ -173,11 +180,17 @@ const breadcrumbs = [
                                         :class="[
                                             'rounded-full px-2 py-1 text-xs font-medium',
                                             borrowing.status === 'dipinjam' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' :
+                                            borrowing.status === 'menunggu_pengembalian' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400' :
                                             borrowing.status === 'dikembalikan' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' :
                                             'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400'
                                         ]"
                                     >
-                                        {{ borrowing.status }}
+                                        {{ 
+                                            borrowing.status === 'menunggu_pengembalian' ? 'Menunggu Pengembalian' :
+                                            borrowing.status === 'dikembalikan' ? 'Dikembalikan' :
+                                            borrowing.status === 'terlambat' ? 'Terlambat' :
+                                            'Dipinjam'
+                                        }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3">
@@ -202,6 +215,14 @@ const breadcrumbs = [
                                             title="Kembalikan"
                                         >
                                             <RotateCcw class="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            v-if="borrowing.status === 'menunggu_pengembalian'"
+                                            @click="approveReturn(borrowing)"
+                                            class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-green-600 dark:hover:bg-gray-700"
+                                            title="Setujui Pengembalian"
+                                        >
+                                            <CheckCircle class="h-4 w-4" />
                                         </button>
                                         <button
                                             @click="deleteTransaction(borrowing)"

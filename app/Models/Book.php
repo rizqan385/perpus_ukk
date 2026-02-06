@@ -51,10 +51,10 @@ class Book extends Model
     }
 
     /**
-     * Get available stock
+     * Get available stock (now same as physical stock since we decrement/increment)
      */
     public function availableStock(): int
     {
-        return $this->stok - $this->borrowedCount();
+        return $this->stok;
     }
 }

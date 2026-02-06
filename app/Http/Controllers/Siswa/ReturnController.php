@@ -27,6 +27,11 @@ class ReturnController extends Controller
             ->where('status', 'dipinjam')
             ->get();
 
+        $pendingReturns = $member->borrowings()
+            ->with('book')
+            ->where('status', 'menunggu_pengembalian')
+            ->get();
+
         $returnHistory = $member->borrowings()
             ->with('book')
             ->whereIn('status', ['dikembalikan', 'terlambat'])
@@ -36,34 +41,30 @@ class ReturnController extends Controller
 
         return Inertia::render('Siswa/Returns', [
             'activeBorrowings' => $activeBorrowings,
+            'pendingReturns' => $pendingReturns,
             'returnHistory' => $returnHistory,
             'member' => $member,
         ]);
     }
 
     /**
-     * Return a borrowed book.
+     * Request return for a borrowed book.
      */
-    public function returnBook(Borrowing $borrowing): RedirectResponse
+    public function requestReturn(Borrowing $borrowing): RedirectResponse
     {
         $user = auth()->user();
         $member = $user->member;
 
         if (!$member || $borrowing->member_id !== $member->id) {
-            return back()->withErrors(['error' => 'Anda tidak berhak mengembalikan buku ini.']);
+            return back()->withErrors(['error' => 'Anda tidak berhak melakukan request pengembalian untuk buku ini.']);
         }
 
         if ($borrowing->status !== 'dipinjam') {
-            return back()->withErrors(['error' => 'Buku ini sudah dikembalikan.']);
+            return back()->withErrors(['error' => 'Buku ini tidak dapat di-request pengembalian.']);
         }
 
-        $borrowing->returnBook();
+        $borrowing->requestReturn();
 
-        $message = 'Buku "' . $borrowing->book->judul . '" berhasil dikembalikan.';
-        if ($borrowing->denda > 0) {
-            $message .= ' Denda keterlambatan: Rp ' . number_format($borrowing->denda, 0, ',', '.');
-        }
-
-        return back()->with('success', $message);
+        return back()->with('success', 'Request pengembalian buku "' . $borrowing->book->judul . '" berhasil dikirim. Menunggu persetujuan admin.');
     }
 }

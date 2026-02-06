@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FineController as AdminFineController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Siswa\BorrowingController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
+use App\Http\Controllers\Siswa\FineController as SiswaFineController;
 use App\Http\Controllers\Siswa\MemberRegistrationController;
 use App\Http\Controllers\Siswa\ReturnController;
 use App\Http\Middleware\RoleMiddleware;
@@ -53,7 +55,12 @@ Route::prefix('admin')
         Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
         Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
         Route::post('transactions/{transaction}/return', [TransactionController::class, 'returnBook'])->name('transactions.return');
+        Route::post('transactions/{transaction}/approve-return', [TransactionController::class, 'approveReturn'])->name('transactions.approve-return');
         Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+        
+        // Fines Management
+        Route::get('fines', [AdminFineController::class, 'index'])->name('fines.index');
+        Route::post('fines/{borrowing}/confirm', [AdminFineController::class, 'confirm'])->name('fines.confirm');
     });
 
 // Siswa (Student) Routes
@@ -73,7 +80,11 @@ Route::prefix('siswa')
         
         // Returns
         Route::get('returns', [ReturnController::class, 'index'])->name('returns');
-        Route::post('returns/{borrowing}', [ReturnController::class, 'returnBook'])->name('returns.store');
+        Route::post('returns/{borrowing}/request', [ReturnController::class, 'requestReturn'])->name('returns.request');
+        
+        // Fines
+        Route::get('fines', [SiswaFineController::class, 'index'])->name('fines');
+        Route::post('fines/{borrowing}/pay', [SiswaFineController::class, 'pay'])->name('fines.pay');
     });
 
 require __DIR__.'/settings.php';

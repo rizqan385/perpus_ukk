@@ -19,6 +19,14 @@ class BookController extends Controller
     {
         $query = Book::query();
 
+        // Date filter
+        if ($request->has('from_date') && $request->get('from_date')) {
+            $query->whereDate('created_at', '>=', $request->get('from_date'));
+        }
+        if ($request->has('to_date') && $request->get('to_date')) {
+            $query->whereDate('created_at', '<=', $request->get('to_date'));
+        }
+
         if ($request->has('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
@@ -32,7 +40,7 @@ class BookController extends Controller
 
         return Inertia::render('Admin/Books/Index', [
             'books' => $books,
-            'filters' => $request->only('search'),
+            'filters' => $request->only('search', 'from_date', 'to_date'),
         ]);
     }
 
