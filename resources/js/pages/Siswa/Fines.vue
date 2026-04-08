@@ -24,6 +24,7 @@ interface Member {
 }
 
 const props = defineProps<{
+    activeFines: Borrowing[];
     unpaidFines: Borrowing[];
     pendingFines: Borrowing[];
     paidFines: Borrowing[];
@@ -57,6 +58,14 @@ const payFine = (borrowing: Borrowing) => {
     if (confirm(`Apakah Anda yakin ingin membayar denda ${formatCurrency(borrowing.denda)} untuk buku "${borrowing.book.judul}"?`)) {
         router.post(`/siswa/fines/${borrowing.id}/pay`);
     }
+};
+
+const getDaysLate = (borrowing: Borrowing) => {
+    const today = new Date();
+    const returnDate = new Date(borrowing.tanggal_kembali);
+    const diffTime = today.getTime() - returnDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
 };
 </script>
 
@@ -93,6 +102,40 @@ const payFine = (borrowing: Borrowing) => {
                         </div>
                         <div class="rounded-full bg-amber-500 p-3">
                             <Clock class="h-6 w-6 text-white" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Fines (Berjalan) -->
+            <div v-if="activeFines && activeFines.length > 0" class="rounded-xl border bg-white p-6 dark:bg-gray-800">
+                <div class="mb-4 flex items-center gap-2">
+                    <Clock class="h-5 w-5 text-orange-500" />
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Estimasi Denda Berjalan</h2>
+                </div>
+                <div class="mb-4 rounded-lg bg-orange-50 p-3 text-sm text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
+                    Buku di bawah ini telah melewati batas waktu tetapi belum Anda kembalikan atau masih menunggu konfirmasi pengembalian.
+                    Denda akan diakumulasikan Rp 1.000 / hari keterlambatan.
+                </div>
+                <div class="space-y-3">
+                    <div
+                        v-for="fine in activeFines"
+                        :key="'active-'+fine.id"
+                        class="flex items-center justify-between rounded-lg bg-orange-50/50 p-4 border border-orange-100 dark:bg-orange-900/10 dark:border-orange-800"
+                    >
+                        <div>
+                            <p class="font-medium text-gray-900 dark:text-white">{{ fine.book.judul }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Batas Kembali: {{ formatDate(fine.tanggal_kembali) }}
+                            </p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="rounded-full bg-red-100 px-3 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
+                                Terlambat {{ getDaysLate(fine) }} hari
+                            </span>
+                            <span class="text-lg font-bold text-orange-600 dark:text-orange-400">
+                                Estimasi: {{ formatCurrency(getDaysLate(fine) * 1000) }}
+                            </span>
                         </div>
                     </div>
                 </div>

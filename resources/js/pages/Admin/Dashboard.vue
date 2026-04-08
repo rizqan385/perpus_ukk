@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { BookOpen, Users, ArrowLeftRight, TrendingUp, Clock, AlertTriangle } from 'lucide-vue-next';
+import { BookOpen, Users, ArrowLeftRight, TrendingUp, Clock, AlertTriangle, DollarSign } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 interface Stats {
@@ -113,7 +113,7 @@ const breadcrumbs = [
             </div>
 
             <!-- Quick Actions -->
-            <div class="grid gap-4 md:grid-cols-3">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Link
                     href="/admin/books"
                     class="flex items-center gap-4 rounded-xl border bg-white p-4 transition-all hover:shadow-lg hover:border-blue-500 dark:bg-gray-800 dark:hover:border-blue-400"
@@ -150,6 +150,19 @@ const breadcrumbs = [
                     <div>
                         <h3 class="font-semibold text-gray-900 dark:text-white">Transaksi</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Kelola peminjaman & pengembalian</p>
+                    </div>
+                </Link>
+
+                <Link
+                    href="/admin/fines"
+                    class="flex items-center gap-4 rounded-xl border bg-white p-4 transition-all hover:shadow-lg hover:border-red-500 dark:bg-gray-800 dark:hover:border-red-400"
+                >
+                    <div class="rounded-lg bg-red-100 p-3 dark:bg-red-900/50">
+                        <DollarSign class="h-5 w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Kelola Denda</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Konfirmasi pembayaran denda</p>
                     </div>
                 </Link>
             </div>

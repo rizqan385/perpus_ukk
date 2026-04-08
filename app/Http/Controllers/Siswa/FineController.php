@@ -22,6 +22,12 @@ class FineController extends Controller
             return Inertia::render('Siswa/NeedMembership');
         }
 
+        $activeFines = $member->borrowings()
+            ->with('book')
+            ->whereIn('status', ['dipinjam', 'menunggu_pengembalian'])
+            ->whereDate('tanggal_kembali', '<', now())
+            ->get();
+
         $unpaidFines = $member->borrowings()
             ->with('book')
             ->where('denda', '>', 0)
@@ -42,10 +48,12 @@ class FineController extends Controller
             ->take(10)
             ->get();
 
-        $totalUnpaid = $unpaidFines->sum('denda');
+        $activeFinesTotal = $activeFines->sum(function(Borrowing $b) { return $b->calculateFine(); });
+        $totalUnpaid = $unpaidFines->sum('denda') + $activeFinesTotal;
         $totalPending = $pendingFines->sum('denda');
 
         return Inertia::render('Siswa/Fines', [
+            'activeFines' => $activeFines,
             'unpaidFines' => $unpaidFines,
             'pendingFines' => $pendingFines,
             'paidFines' => $paidFines,

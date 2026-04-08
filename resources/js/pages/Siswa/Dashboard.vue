@@ -65,6 +65,18 @@ const payFine = (borrowing: Borrowing) => {
         router.post(`/siswa/fines/${borrowing.id}/pay`);
     }
 };
+
+const isOverdue = (borrowing: Borrowing) => {
+    return new Date(borrowing.tanggal_kembali) < new Date() && borrowing.status === 'dipinjam';
+};
+
+const getDaysLate = (borrowing: Borrowing) => {
+    const today = new Date();
+    const returnDate = new Date(borrowing.tanggal_kembali);
+    const diffTime = today.getTime() - returnDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+};
 </script>
 
 <template>
@@ -202,7 +214,7 @@ const payFine = (borrowing: Borrowing) => {
                 </div>
 
                 <!-- Quick Actions -->
-                <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid gap-4 md:grid-cols-3">
                     <Link
                         href="/siswa/borrow"
                         class="flex items-center gap-4 rounded-xl border bg-white p-4 transition-all hover:shadow-lg hover:border-blue-500 dark:bg-gray-800 dark:hover:border-blue-400"
@@ -226,6 +238,19 @@ const payFine = (borrowing: Borrowing) => {
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-white">Kembalikan Buku</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Kembalikan buku yang dipinjam</p>
+                        </div>
+                    </Link>
+
+                    <Link
+                        href="/siswa/fines"
+                        class="flex items-center gap-4 rounded-xl border bg-white p-4 transition-all hover:shadow-lg hover:border-red-500 dark:bg-gray-800 dark:hover:border-red-400"
+                    >
+                        <div class="rounded-lg bg-red-100 p-3 dark:bg-red-900/50">
+                            <CreditCard class="h-5 w-5 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">Lihat Denda</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Kelola dan bayar denda</p>
                         </div>
                     </Link>
                 </div>
@@ -255,6 +280,9 @@ const payFine = (borrowing: Borrowing) => {
                                 <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                                     <Calendar class="h-4 w-4" />
                                     <span>Kembali: {{ formatDate(borrowing.tanggal_kembali) }}</span>
+                                </div>
+                                <div v-if="isOverdue(borrowing)" class="mt-1 flex items-center justify-end gap-1 text-xs font-semibold text-red-600 dark:text-red-400">
+                                    <span>Terlambat {{ getDaysLate(borrowing) }} hari (Denda: {{ formatCurrency(getDaysLate(borrowing) * 1000) }})</span>
                                 </div>
                             </div>
                         </div>

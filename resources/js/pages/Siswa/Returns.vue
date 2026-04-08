@@ -149,10 +149,15 @@ const breadcrumbs = [
                         </div>
                         <div class="flex flex-col items-end gap-2">
                             <template v-if="isOverdue(borrowing)">
-                                <span class="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
-                                    <AlertTriangle class="h-4 w-4" />
-                                    Terlambat {{ Math.abs(getDaysRemaining(borrowing)) }} hari
-                                </span>
+                                <div class="flex flex-col items-end gap-1 mb-1">
+                                    <span class="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
+                                        <AlertTriangle class="h-4 w-4" />
+                                        Terlambat {{ Math.abs(getDaysRemaining(borrowing)) }} hari
+                                    </span>
+                                    <span class="text-xs font-semibold text-red-600 dark:text-red-400">
+                                        Estimasi Denda: {{ formatCurrency(Math.abs(getDaysRemaining(borrowing)) * 1000) }}
+                                    </span>
+                                </div>
                             </template>
                             <template v-else>
                                 <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/50 dark:text-green-400">
@@ -284,7 +289,7 @@ const breadcrumbs = [
                                 Buku ini terlambat dikembalikan
                             </p>
                             <p class="mt-1 text-sm text-red-600 dark:text-red-300">
-                                Denda keterlambatan akan dihitung berdasarkan jumlah hari terlambat (Rp 1.000/hari) setelah admin menyetujui.
+                                Anda terlambat {{ Math.abs(getDaysRemaining(selectedBorrowing)) }} hari. Estimasi denda yang harus dibayar adalah <strong>{{ formatCurrency(Math.abs(getDaysRemaining(selectedBorrowing)) * 1000) }}</strong>.
                             </p>
                         </div>
                     </template>

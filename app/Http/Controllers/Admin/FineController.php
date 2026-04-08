@@ -38,13 +38,21 @@ class FineController extends Controller
 
         $fines = $query->latest()->paginate(10);
 
+        $activeFines = Borrowing::with(['member.user', 'book'])
+            ->whereIn('status', ['dipinjam', 'menunggu_pengembalian'])
+            ->whereDate('tanggal_kembali', '<', now())
+            ->get();
+
+        $activeFinesTotal = $activeFines->sum(function(Borrowing $b) { return $b->calculateFine(); });
+
         $stats = [
-            'total_unpaid' => Borrowing::where('denda', '>', 0)->whereNull('payment_status')->sum('denda'),
+            'total_unpaid' => Borrowing::where('denda', '>', 0)->whereNull('payment_status')->sum('denda') + $activeFinesTotal,
             'total_pending' => Borrowing::where('denda', '>', 0)->where('payment_status', 'pending')->sum('denda'),
             'total_paid' => Borrowing::where('denda', '>', 0)->where('payment_status', 'paid')->sum('denda'),
         ];
 
         return Inertia::render('Admin/Fines/Index', [
+            'activeFines' => $activeFines,
             'fines' => $fines,
             'stats' => $stats,
             'filters' => $request->only('search', 'status'),
@@ -60,9 +68,13 @@ class FineController extends Controller
             return back()->withErrors(['error' => 'Tidak ada denda untuk dikonfirmasi.']);
         }
 
+        if ($borrowing->payment_status !== 'pending') {
+            return back()->withErrors(['error' => 'Denda ini belum diajukan untuk pembayaran.']);
+        }
+
         $borrowing->update([
             'payment_status' => 'paid',
-            'denda' => 0, // Clear the fine after payment
+            // Keep the denda value for record purposes
         ]);
 
         return back()->with('success', 'Pembayaran denda berhasil dikonfirmasi.');

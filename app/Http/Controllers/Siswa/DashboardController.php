@@ -26,10 +26,21 @@ class DashboardController extends Controller
             ]);
         }
 
+        $activeFinesTotal = $member->borrowings()
+            ->whereIn('status', ['dipinjam', 'menunggu_pengembalian'])
+            ->get()
+            ->filter(function(Borrowing $b) { return $b->isOverdue(); })
+            ->sum(function(Borrowing $b) { return $b->calculateFine(); });
+
+        $unpaidFinesTotal = $member->borrowings()
+            ->where('denda', '>', 0)
+            ->whereNull('payment_status')
+            ->sum('denda');
+
         $stats = [
             'active_borrowings' => $member->borrowings()->where('status', 'dipinjam')->count(),
             'total_borrowed' => $member->borrowings()->count(),
-            'total_fines' => $member->borrowings()->sum('denda'),
+            'total_fines' => $unpaidFinesTotal + $activeFinesTotal,
         ];
 
         $activeBorrowings = $member->borrowings()

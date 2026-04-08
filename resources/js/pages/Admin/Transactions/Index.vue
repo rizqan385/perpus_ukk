@@ -59,6 +59,18 @@ const returnBook = (borrowing: Borrowing) => {
     }
 };
 
+const isOverdue = (borrowing: Borrowing) => {
+    return new Date(borrowing.tanggal_kembali) < new Date() && ['dipinjam', 'menunggu_pengembalian'].includes(borrowing.status);
+};
+
+const getDaysLate = (borrowing: Borrowing) => {
+    const today = new Date();
+    const returnDate = new Date(borrowing.tanggal_kembali);
+    const diffTime = today.getTime() - returnDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+};
+
 const approveReturn = (borrowing: Borrowing) => {
     if (confirm(`Setujui pengembalian buku "${borrowing.book.judul}" oleh ${borrowing.member.user.name}?`)) {
         router.post(`/admin/transactions/${borrowing.id}/approve-return`);
@@ -196,6 +208,9 @@ const breadcrumbs = [
                                 <td class="px-4 py-3">
                                     <span v-if="borrowing.denda > 0" class="font-medium text-red-600 dark:text-red-400">
                                         {{ formatCurrency(borrowing.denda) }}
+                                    </span>
+                                    <span v-else-if="isOverdue(borrowing)" class="font-medium text-orange-600 dark:text-orange-400">
+                                        Estimasi: {{ formatCurrency(getDaysLate(borrowing) * 1000) }}
                                     </span>
                                     <span v-else class="text-gray-400">-</span>
                                 </td>

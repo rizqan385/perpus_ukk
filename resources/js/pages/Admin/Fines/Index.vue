@@ -48,6 +48,7 @@ interface Stats {
 }
 
 const props = defineProps<{
+    activeFines: Borrowing[];
     fines: Pagination;
     stats: Stats;
     filters: { search?: string; status?: string };
@@ -64,6 +65,14 @@ const confirmPayment = (borrowing: Borrowing) => {
     if (confirm(`Konfirmasi pembayaran denda dari "${borrowing.member.user.name}" untuk buku "${borrowing.book.judul}"?`)) {
         router.post(`/admin/fines/${borrowing.id}/confirm`);
     }
+};
+
+const getDaysLate = (borrowing: Borrowing) => {
+    const today = new Date();
+    const returnDate = new Date(borrowing.tanggal_kembali);
+    const diffTime = today.getTime() - returnDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
 };
 
 const breadcrumbs = [
@@ -166,6 +175,49 @@ const formatCurrency = (amount: number) => {
                 >
                     Cari
                 </button>
+            </div>
+
+            <!-- Active Fines (Berjalan) -->
+            <div v-if="activeFines && activeFines.length > 0" class="overflow-hidden rounded-xl border bg-white dark:bg-gray-800 mb-6 border-orange-200 dark:border-orange-900 border-2">
+                <div class="px-4 py-3 bg-orange-50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-800 flex items-center gap-2">
+                    <Clock class="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    <h2 class="font-semibold text-orange-900 dark:text-orange-100">Estimasi Denda Berjalan (Buku Belum Dikembalikan)</h2>
+                </div>
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 text-xs">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Anggota</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Buku</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Batas Kembali</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Estimasi Denda</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <tr v-for="fine in activeFines" :key="'active-'+fine.id" class="hover:bg-orange-50/50 dark:hover:bg-orange-900/10">
+                            <td class="px-4 py-3">
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">{{ fine.member.user.name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ fine.member.no_anggota }}</p>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ fine.book.judul }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                                {{ formatDate(fine.tanggal_kembali) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
+                                    Terlambat {{ getDaysLate(fine) }} hari
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="font-bold text-orange-600 dark:text-orange-400">
+                                    {{ formatCurrency(getDaysLate(fine) * 1000) }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Table -->

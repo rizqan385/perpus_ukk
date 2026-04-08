@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Folder, LayoutGrid, Users, ArrowLeftRight, DollarSign, Book, ArrowBigDownDash } from 'lucide-vue-next';
+import { computed } from 'vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -17,13 +18,64 @@ import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const page = usePage();
+const user = page.props.auth.user as any;
+
+// Dynamic navigation based on user role
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    if (user?.role === 'admin') {
+        items.push(
+            {
+                title: 'Buku',
+                href: '/admin/books',
+                icon: Book,
+            },
+            {
+                title: 'Anggota',
+                href: '/admin/members',
+                icon: Users,
+            },
+            {
+                title: 'Transaksi',
+                href: '/admin/transactions',
+                icon: ArrowLeftRight,
+            },
+            {
+                title: 'Denda',
+                href: '/admin/fines',
+                icon: DollarSign,
+            }
+        );
+    } else if (user?.role === 'siswa') {
+        items.push(
+            {
+                title: 'Pinjam Buku',
+                href: '/siswa/borrow',
+                icon: BookOpen,
+            },
+            {
+                title: 'Kembalikan Buku',
+                href: '/siswa/returns',
+                icon: ArrowBigDownDash,
+            },
+            {
+                title: 'Denda',
+                href: '/siswa/fines',
+                icon: DollarSign,
+            }
+        );
+    }
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {
