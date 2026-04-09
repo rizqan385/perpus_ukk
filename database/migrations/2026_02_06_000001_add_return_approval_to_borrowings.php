@@ -17,7 +17,9 @@ return new class extends Migration
         });
 
         // Update the status enum to include 'menunggu_pengembalian'
-        DB::statement("ALTER TABLE borrowings MODIFY COLUMN status ENUM('dipinjam', 'menunggu_pengembalian', 'dikembalikan', 'terlambat') DEFAULT 'dipinjam'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE borrowings MODIFY COLUMN status ENUM('dipinjam', 'menunggu_pengembalian', 'dikembalikan', 'terlambat') DEFAULT 'dipinjam'");
+        }
     }
 
     /**
@@ -30,6 +32,8 @@ return new class extends Migration
         });
 
         // Revert status enum to original values
-        DB::statement("ALTER TABLE borrowings MODIFY COLUMN status ENUM('dipinjam', 'dikembalikan', 'terlambat') DEFAULT 'dipinjam'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE borrowings MODIFY COLUMN status ENUM('dipinjam', 'dikembalikan', 'terlambat') DEFAULT 'dipinjam'");
+        }
     }
 };

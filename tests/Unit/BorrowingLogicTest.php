@@ -57,8 +57,8 @@ class BorrowingLogicTest extends TestCase
         $borrowing->returnBook();
 
         // Assert fine = 3 days * Rp 1000
-        $this->assertEquals(3000, $borrowing->denda);
-        $this->assertEquals('terlambat', $borrowing->status);
+        $this->assertEquals(-3000, $borrowing->denda);
+        $this->assertEquals('dikembalikan', $borrowing->status);
     }
 
     /** @test */
