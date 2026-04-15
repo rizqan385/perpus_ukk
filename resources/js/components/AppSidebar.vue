@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, ArrowLeftRight, DollarSign, Book, ArrowBigDownDash } from 'lucide-vue-next';
+import { LayoutGrid, Users, ArrowLeftRight, DollarSign, Book, ArrowBigDownDash, Settings, BookOpen, ClipboardList, Heart } from 'lucide-vue-next';
 import { computed } from 'vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -20,6 +19,7 @@ import AppLogo from './AppLogo.vue';
 
 const page = usePage();
 const user = page.props.auth.user as any;
+const pendingBorrowCount = computed(() => (page.props as any).pendingBorrowCount ?? 0);
 
 // Dynamic navigation based on user role
 const mainNavItems = computed<NavItem[]>(() => {
@@ -49,9 +49,20 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: ArrowLeftRight,
             },
             {
+                title: 'Persetujuan Pinjam',
+                href: '/admin/borrow-approvals',
+                icon: ClipboardList,
+                badge: pendingBorrowCount.value > 0 ? String(pendingBorrowCount.value) : undefined,
+            },
+            {
                 title: 'Denda',
                 href: '/admin/fines',
                 icon: DollarSign,
+            },
+            {
+                title: 'Pengaturan',
+                href: '/admin/settings',
+                icon: Settings,
             }
         );
     } else if (user?.role === 'siswa') {
@@ -67,6 +78,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: ArrowBigDownDash,
             },
             {
+                title: 'Favorit',
+                href: '/siswa/favorites',
+                icon: Heart,
+            },
+            {
                 title: 'Denda',
                 href: '/siswa/fines',
                 icon: DollarSign,
@@ -77,18 +93,7 @@ const mainNavItems = computed<NavItem[]>(() => {
     return items;
 });
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
+
 </script>
 
 <template>
@@ -110,7 +115,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

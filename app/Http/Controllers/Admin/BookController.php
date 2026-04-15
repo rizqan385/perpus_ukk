@@ -106,24 +106,35 @@ class BookController extends Controller
     public function update(Request $request, Book $book): RedirectResponse
     {
         $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'pengarang' => 'required|string|max:255',
-            'penerbit' => 'required|string|max:255',
+            'judul'        => 'required|string|max:255',
+            'pengarang'    => 'required|string|max:255',
+            'penerbit'     => 'required|string|max:255',
             'tahun_terbit' => 'required|integer|min:1900|max:' . date('Y'),
-            'isbn' => 'nullable|string|max:20',
-            'stok' => 'required|integer|min:0',
-            'cover_image' => 'nullable|image|max:2048',
-            'deskripsi' => 'nullable|string',
+            'isbn'         => 'nullable|string|max:20',
+            'stok'         => 'required|integer|min:0',
+            'cover_image'  => 'nullable|image|max:2048',
+            'remove_cover' => 'nullable|boolean',
+            'deskripsi'    => 'nullable|string',
         ]);
 
-        if ($request->hasFile('cover_image')) {
-            // Delete old image
+        // Remove existing cover if requested
+        if ($request->boolean('remove_cover')) {
+            if ($book->cover_image) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $validated['cover_image'] = null;
+        } elseif ($request->hasFile('cover_image')) {
+            // Replace cover with new one
             if ($book->cover_image) {
                 Storage::disk('public')->delete($book->cover_image);
             }
             $validated['cover_image'] = $request->file('cover_image')->store('covers', 'public');
+        } else {
+            // Keep existing cover — remove key so it won't overwrite
+            unset($validated['cover_image']);
         }
 
+        unset($validated['remove_cover']);
         $book->update($validated);
 
         return redirect()->route('admin.books.index')

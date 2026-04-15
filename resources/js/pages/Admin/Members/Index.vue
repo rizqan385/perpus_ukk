@@ -151,9 +151,13 @@ const breadcrumbs = [
                             <td class="px-4 py-3">
                                 <div v-if="member.total_fines > 0" class="flex items-center gap-1">
                                     <AlertTriangle class="h-4 w-4 text-red-500" />
-                                    <span class="font-medium text-red-600 dark:text-red-400">{{ formatCurrency(member.total_fines) }}</span>
+                                    <span class="font-semibold text-red-600 dark:text-red-400">{{ formatCurrency(member.total_fines) }}</span>
                                 </div>
-                                <span v-else class="text-gray-400">-</span>
+                                <div v-else-if="member.pending_fines > 0" class="flex items-center gap-1">
+                                    <AlertTriangle class="h-4 w-4 text-amber-500" />
+                                    <span class="text-sm font-medium text-amber-600 dark:text-amber-400">Menunggu konfirmasi</span>
+                                </div>
+                                <span v-else class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/40 dark:text-green-400">Lunas</span>
                             </td>
                             <td class="px-4 py-3">
                                 <span

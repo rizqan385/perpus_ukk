@@ -161,8 +161,20 @@ const breadcrumbs = [
                         <tr v-for="book in books.data" :key="book.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-8 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/50">
-                                        <BookOpen class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                    <!-- Cover thumbnail -->
+                                    <div class="h-12 w-9 flex-shrink-0 overflow-hidden rounded shadow-sm">
+                                        <img
+                                            v-if="book.cover_image"
+                                            :src="`/storage/${book.cover_image}`"
+                                            :alt="book.judul"
+                                            class="h-full w-full object-cover"
+                                        />
+                                        <div
+                                            v-else
+                                            class="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-900/50 dark:to-indigo-900/50"
+                                        >
+                                            <BookOpen class="h-4 w-4 text-blue-500" />
+                                        </div>
                                     </div>
                                     <span class="font-medium text-gray-900 dark:text-white">{{ book.judul }}</span>
                                 </div>

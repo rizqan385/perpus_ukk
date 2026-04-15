@@ -64,11 +64,11 @@ class FineController extends Controller
     }
 
     /**
-     * Mark a fine as paid (pending confirmation).
+     * Pay a fine (simulasi pembayaran — langsung lunas tanpa payment gateway).
      */
     public function pay(Borrowing $borrowing): RedirectResponse
     {
-        $user = auth()->user();
+        $user   = auth()->user();
         $member = $user->member;
 
         if (!$member || $borrowing->member_id !== $member->id) {
@@ -79,12 +79,14 @@ class FineController extends Controller
             return back()->withErrors(['error' => 'Tidak ada denda yang harus dibayar.']);
         }
 
-        if ($borrowing->payment_status !== null) {
-            return back()->withErrors(['error' => 'Denda ini sudah dalam proses pembayaran.']);
+        if ($borrowing->payment_status === 'paid') {
+            return back()->withErrors(['error' => 'Denda ini sudah lunas.']);
         }
 
-        $borrowing->update(['payment_status' => 'pending']);
+        // Langsung tandai lunas (simulasi pembayaran tunai di kasir perpustakaan)
+        $borrowing->update(['payment_status' => 'paid']);
 
-        return back()->with('success', 'Pembayaran denda berhasil diajukan. Menunggu konfirmasi admin.');
+        $amount = 'Rp ' . number_format($borrowing->denda, 0, ',', '.');
+        return back()->with('success', "Pembayaran denda {$amount} berhasil! Anda kini dapat meminjam buku kembali.");
     }
 }

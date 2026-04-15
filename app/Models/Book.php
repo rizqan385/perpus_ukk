@@ -10,11 +10,6 @@ class Book extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'judul',
         'pengarang',
@@ -26,35 +21,34 @@ class Book extends Model
         'deskripsi',
     ];
 
-    /**
-     * Get the borrowings for this book
-     */
     public function borrowings(): HasMany
     {
         return $this->hasMany(Borrowing::class);
     }
 
-    /**
-     * Check if book is available for borrowing
-     */
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(BookFavorite::class);
+    }
+
     public function isAvailable(): bool
     {
         return $this->stok > 0;
     }
 
-    /**
-     * Get current borrowed count
-     */
     public function borrowedCount(): int
     {
         return $this->borrowings()->where('status', 'dipinjam')->count();
     }
 
-    /**
-     * Get available stock (now same as physical stock since we decrement/increment)
-     */
     public function availableStock(): int
     {
         return $this->stok;
+    }
+
+    public function isFavoritedBy(?int $userId): bool
+    {
+        if (!$userId) return false;
+        return $this->favorites()->where('user_id', $userId)->exists();
     }
 }

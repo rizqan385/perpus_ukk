@@ -109,41 +109,29 @@ const formatCurrency = (amount: number) => {
             </div>
 
             <!-- Stats -->
-            <div class="grid gap-4 md:grid-cols-3">
-                <div class="rounded-xl border bg-gradient-to-br from-red-50 to-red-100 p-6 dark:from-red-900/20 dark:to-red-800/20 dark:border-red-800">
+            <div class="grid gap-4 md:grid-cols-2">
+                <!-- Belum Dibayar -->
+                <div class="flex flex-col justify-between rounded-xl border bg-gradient-to-br from-red-50 to-red-100 p-6 dark:from-red-900/20 dark:to-red-800/20 dark:border-red-800">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-red-600 dark:text-red-400">Belum Dibayar</p>
-                            <p class="text-2xl font-bold text-red-900 dark:text-red-100">{{ formatCurrency(stats.total_unpaid) }}</p>
-                        </div>
+                        <p class="text-sm font-medium text-red-600 dark:text-red-400">Belum Dibayar</p>
                         <div class="rounded-full bg-red-500 p-3">
                             <AlertTriangle class="h-6 w-6 text-white" />
                         </div>
                     </div>
+                    <p class="mt-4 text-3xl font-bold text-red-900 dark:text-red-100">{{ formatCurrency(stats.total_unpaid) }}</p>
+                    <p class="mt-1 text-xs text-red-500 dark:text-red-400">Total denda belum dilunasi siswa</p>
                 </div>
 
-                <div class="rounded-xl border bg-gradient-to-br from-amber-50 to-amber-100 p-6 dark:from-amber-900/20 dark:to-amber-800/20 dark:border-amber-800">
+                <!-- Sudah Lunas -->
+                <div class="flex flex-col justify-between rounded-xl border bg-gradient-to-br from-green-50 to-green-100 p-6 dark:from-green-900/20 dark:to-green-800/20 dark:border-green-800">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-amber-600 dark:text-amber-400">Menunggu Konfirmasi</p>
-                            <p class="text-2xl font-bold text-amber-900 dark:text-amber-100">{{ formatCurrency(stats.total_pending) }}</p>
-                        </div>
-                        <div class="rounded-full bg-amber-500 p-3">
-                            <Clock class="h-6 w-6 text-white" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="rounded-xl border bg-gradient-to-br from-green-50 to-green-100 p-6 dark:from-green-900/20 dark:to-green-800/20 dark:border-green-800">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-green-600 dark:text-green-400">Sudah Lunas</p>
-                            <p class="text-2xl font-bold text-green-900 dark:text-green-100">{{ formatCurrency(stats.total_paid) }}</p>
-                        </div>
+                        <p class="text-sm font-medium text-green-600 dark:text-green-400">Sudah Lunas</p>
                         <div class="rounded-full bg-green-500 p-3">
                             <DollarSign class="h-6 w-6 text-white" />
                         </div>
                     </div>
+                    <p class="mt-4 text-3xl font-bold text-green-900 dark:text-green-100">{{ formatCurrency(stats.total_paid) }}</p>
+                    <p class="mt-1 text-xs text-green-500 dark:text-green-400">Total pembayaran denda diterima</p>
                 </div>
             </div>
 

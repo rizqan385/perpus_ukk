@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { BookOpen, ArrowLeftRight, Clock, AlertTriangle, CheckCircle, Calendar } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { BookOpen, ArrowLeftRight, Clock, AlertTriangle, CheckCircle, Calendar, ChevronRight, RotateCcw, Timer } from 'lucide-vue-next';
+import SiswaLayout from '@/layouts/SiswaLayout.vue';
 import { ref } from 'vue';
 
-interface Book {
-    id: number;
-    judul: string;
-    pengarang: string;
-}
+interface Book { id: number; judul: string; pengarang: string; }
 
 interface Borrowing {
     id: number;
@@ -22,10 +18,7 @@ interface Borrowing {
     book: Book;
 }
 
-interface Member {
-    no_anggota: string;
-    status: string;
-}
+interface Member { no_anggota: string; status: string; }
 
 const props = defineProps<{
     activeBorrowings: Borrowing[];
@@ -37,27 +30,15 @@ const props = defineProps<{
 const selectedBorrowing = ref<Borrowing | null>(null);
 const showConfirmModal = ref(false);
 
-const isOverdue = (borrowing: Borrowing) => {
-    return new Date(borrowing.tanggal_kembali) < new Date();
+const isOverdue = (b: Borrowing) => new Date(b.tanggal_kembali) < new Date();
+
+const getDaysRemaining = (b: Borrowing) => {
+    const diff = new Date(b.tanggal_kembali).getTime() - new Date().getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
 };
 
-const getDaysRemaining = (borrowing: Borrowing) => {
-    const today = new Date();
-    const returnDate = new Date(borrowing.tanggal_kembali);
-    const diffTime = returnDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-};
-
-const openConfirmModal = (borrowing: Borrowing) => {
-    selectedBorrowing.value = borrowing;
-    showConfirmModal.value = true;
-};
-
-const closeConfirmModal = () => {
-    selectedBorrowing.value = null;
-    showConfirmModal.value = false;
-};
+const openConfirmModal = (b: Borrowing) => { selectedBorrowing.value = b; showConfirmModal.value = true; };
+const closeConfirmModal = () => { selectedBorrowing.value = null; showConfirmModal.value = false; };
 
 const confirmReturn = () => {
     if (!selectedBorrowing.value) return;
@@ -66,257 +47,269 @@ const confirmReturn = () => {
     });
 };
 
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    });
-};
+const formatDate = (date: string) => new Date(date).toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric'
+});
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(amount);
-};
-
-const breadcrumbs = [
-    { title: 'Dashboard Siswa', href: '/siswa' },
-    { title: 'Pengembalian Buku', href: '/siswa/returns' },
-];
+const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
+    style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+}).format(amount);
 </script>
 
 <template>
-    <Head title="Pengembalian Buku" />
+    <Head title="Kembalikan Buku — E-Perpustakaan" />
+    <SiswaLayout>
+        <!-- ══ HERO HEADER ══ -->
+        <section style="background: linear-gradient(135deg, #5C3D1E 0%, #3D2810 100%);" class="relative overflow-hidden py-12 px-6">
+            <div class="pointer-events-none absolute inset-0">
+                <div class="absolute right-0 top-0 h-48 w-48 rounded-full opacity-10" style="background: #E8A020;"></div>
+            </div>
+            <div class="relative mx-auto max-w-4xl">
+                <div class="flex items-center gap-2 mb-4">
+                    <a href="/" class="text-sm text-white opacity-60 hover:opacity-100 transition-opacity">Beranda</a>
+                    <ChevronRight class="h-4 w-4 text-white opacity-40" />
+                    <span class="text-sm text-white font-semibold">Kembalikan Buku</span>
+                </div>
+                <h1 class="text-3xl font-bold text-white" style="font-family: Georgia, serif;">↩ Kembalikan Buku</h1>
+                <p class="mt-1 text-white opacity-70">Kelola pengembalian buku yang sedang kamu pinjam</p>
+                <!-- Quick stats -->
+                <div class="mt-6 flex gap-4 flex-wrap">
+                    <div class="flex items-center gap-2 rounded-xl px-4 py-2" style="background: rgba(255,255,255,0.1);">
+                        <BookOpen class="h-4 w-4 text-amber-300" />
+                        <span class="text-sm text-white font-semibold">{{ activeBorrowings.length }} dipinjam</span>
+                    </div>
+                    <div v-if="pendingReturns.length > 0" class="flex items-center gap-2 rounded-xl px-4 py-2" style="background: rgba(255,255,255,0.1);">
+                        <Clock class="h-4 w-4 text-amber-300" />
+                        <span class="text-sm text-white font-semibold">{{ pendingReturns.length }} menunggu konfirmasi</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 p-6">
-            <!-- Header -->
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Pengembalian Buku</h1>
-                <p class="text-gray-600 dark:text-gray-400">Kembalikan buku yang sedang Anda pinjam</p>
+        <div class="mx-auto max-w-4xl px-6 py-8 pb-16 flex flex-col gap-6">
+
+            <!-- ══ NO ACTIVE BORROWINGS ══ -->
+            <div v-if="activeBorrowings.length === 0 && pendingReturns.length === 0" class="flex flex-col items-center py-20 text-center rounded-2xl bg-white shadow-sm border-2" style="border-color: #F0D6A8;">
+                <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full" style="background: #DCFCE7;">
+                    <CheckCircle class="h-10 w-10 text-green-500" />
+                </div>
+                <h3 class="text-xl font-bold mb-1" style="color: #5C3D1E;">Tidak Ada Buku yang Dipinjam</h3>
+                <p class="text-sm mb-6" style="color: #9A7050;">Semua buku sudah dikembalikan dengan baik</p>
+                <a href="/koleksi-buku" class="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white" style="background: linear-gradient(135deg, #E8A020, #C4781A);">
+                    <BookOpen class="h-4 w-4" /> Pinjam Buku Baru
+                </a>
             </div>
 
-            <!-- Active Borrowings -->
-            <div class="rounded-xl border bg-white p-6 dark:bg-gray-800 dark:border-gray-700">
-                <h2 class="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
-                    <Clock class="h-5 w-5" />
-                    Buku yang Harus Dikembalikan
-                </h2>
-
-                <div v-if="activeBorrowings.length > 0" class="space-y-4">
+            <!-- ══ ACTIVE BORROWINGS ══ -->
+            <div v-if="activeBorrowings.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #F0D6A8;">
+                <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #FFF8F0; border-color: #F0D6A8;">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-full" style="background: #FFF3E0;">
+                        <BookOpen class="h-5 w-5" style="color: #E8A020;" />
+                    </div>
+                    <div>
+                        <h2 class="font-bold" style="color: #5C3D1E;">Buku yang Sedang Dipinjam</h2>
+                        <p class="text-xs" style="color: #9A7050;">Klik "Kembalikan Buku" untuk request pengembalian</p>
+                    </div>
+                </div>
+                <div class="divide-y" style="border-color: #FFF3E0;">
                     <div
                         v-for="borrowing in activeBorrowings"
                         :key="borrowing.id"
-                        :class="[
-                            'flex flex-col gap-4 rounded-xl border p-4 md:flex-row md:items-center md:justify-between',
-                            isOverdue(borrowing) 
-                                ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' 
-                                : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50'
-                        ]"
+                        class="p-5 transition hover:bg-orange-50"
+                        :style="isOverdue(borrowing) ? 'background: #FFF5F5;' : ''"
                     >
-                        <div class="flex items-start gap-4">
-                            <div :class="[
-                                'rounded-lg p-3',
-                                isOverdue(borrowing) 
-                                    ? 'bg-red-100 dark:bg-red-900/50' 
-                                    : 'bg-blue-100 dark:bg-blue-900/50'
-                            ]">
-                                <BookOpen :class="[
-                                    'h-6 w-6',
-                                    isOverdue(borrowing) ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
-                                ]" />
-                            </div>
-                            <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-white">{{ borrowing.book.judul }}</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ borrowing.book.pengarang }}</p>
-                                <div class="mt-2 flex flex-wrap items-center gap-3 text-sm">
-                                    <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                                        <Calendar class="h-4 w-4" />
-                                        Dipinjam: {{ formatDate(borrowing.tanggal_pinjam) }}
-                                    </span>
-                                    <span :class="[
-                                        'flex items-center gap-1',
-                                        isOverdue(borrowing) ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
-                                    ]">
-                                        <Clock class="h-4 w-4" />
-                                        Batas: {{ formatDate(borrowing.tanggal_kembali) }}
-                                    </span>
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <!-- Book info -->
+                            <div class="flex items-start gap-4">
+                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-sm"
+                                    :style="isOverdue(borrowing) ? 'background: #FEE2E2;' : 'background: #FFF3E0;'">
+                                    <BookOpen class="h-6 w-6" :style="isOverdue(borrowing) ? 'color: #EF4444;' : 'color: #E8A020;'" />
+                                </div>
+                                <div>
+                                    <h3 class="font-bold" style="color: #5C3D1E;">{{ borrowing.book.judul }}</h3>
+                                    <p class="text-sm" style="color: #9A7050;">{{ borrowing.book.pengarang }}</p>
+                                    <div class="mt-2 flex flex-wrap gap-3 text-xs">
+                                        <span class="flex items-center gap-1" style="color: #9A7050;">
+                                            <Calendar class="h-3.5 w-3.5" />
+                                            Dipinjam: {{ formatDate(borrowing.tanggal_pinjam) }}
+                                        </span>
+                                        <span class="flex items-center gap-1 font-semibold" :style="isOverdue(borrowing) ? 'color: #DC2626;' : 'color: #9A7050;'">
+                                            <Clock class="h-3.5 w-3.5" />
+                                            {{ isOverdue(borrowing) ? 'Terlambat sejak:' : 'Batas:' }} {{ formatDate(borrowing.tanggal_kembali) }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <template v-if="isOverdue(borrowing)">
-                                <div class="flex flex-col items-end gap-1 mb-1">
-                                    <span class="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
-                                        <AlertTriangle class="h-4 w-4" />
+                            <!-- Status + action -->
+                            <div class="flex items-center gap-3 sm:flex-col sm:items-end">
+                                <!-- Overdue badge -->
+                                <div v-if="isOverdue(borrowing)" class="text-center sm:text-right">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+                                        <AlertTriangle class="h-3.5 w-3.5" />
                                         Terlambat {{ Math.abs(getDaysRemaining(borrowing)) }} hari
                                     </span>
-                                    <span class="text-xs font-semibold text-red-600 dark:text-red-400">
-                                        Estimasi Denda: {{ formatCurrency(Math.abs(getDaysRemaining(borrowing)) * 1000) }}
-                                    </span>
+                                    <p class="mt-1 text-xs font-bold text-red-600">
+                                        Est. denda: {{ formatCurrency(Math.abs(getDaysRemaining(borrowing)) * 1000) }}
+                                    </p>
                                 </div>
-                            </template>
-                            <template v-else>
-                                <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/50 dark:text-green-400">
+                                <!-- Days remaining badge -->
+                                <span v-else class="rounded-full px-3 py-1 text-xs font-bold" style="background: #DCFCE7; color: #166534;">
+                                    <Timer class="inline h-3.5 w-3.5 mr-1" />
                                     {{ getDaysRemaining(borrowing) }} hari tersisa
                                 </span>
-                            </template>
-                            <button
-                                @click="openConfirmModal(borrowing)"
-                                class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-                            >
-                                <ArrowLeftRight class="h-4 w-4" />
-                                Request Pengembalian
-                            </button>
+                                <button
+                                    @click="openConfirmModal(borrowing)"
+                                    class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90 active:scale-95 shadow-sm whitespace-nowrap"
+                                    style="background: linear-gradient(135deg, #E8A020, #C4781A);"
+                                >
+                                    <RotateCcw class="h-4 w-4" />
+                                    Kembalikan Buku
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div v-else class="py-12 text-center">
-                    <CheckCircle class="mx-auto mb-4 h-16 w-16 text-green-400" />
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Tidak Ada Buku yang Dipinjam</h3>
-                    <p class="text-gray-500 dark:text-gray-400">Semua buku telah di-request pengembalian atau sudah dikembalikan</p>
-                </div>
             </div>
 
-            <!-- Pending Returns -->
-            <div v-if="pendingReturns.length > 0" class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:bg-amber-900/20 dark:border-amber-800">
-                <h2 class="mb-4 flex items-center gap-2 text-lg font-semibold text-amber-900 dark:text-amber-100">
-                    <Clock class="h-5 w-5" />
-                    Menunggu Persetujuan Admin
-                </h2>
-                <div class="space-y-3">
-                    <div
-                        v-for="borrowing in pendingReturns"
-                        :key="borrowing.id"
-                        class="flex flex-col gap-4 rounded-xl border border-amber-200 bg-white p-4 md:flex-row md:items-center md:justify-between dark:bg-gray-800 dark:border-amber-700"
-                    >
-                        <div class="flex items-start gap-4">
-                            <div class="rounded-lg bg-amber-100 p-3 dark:bg-amber-900/50">
-                                <BookOpen class="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            <!-- ══ PENDING RETURNS ══ -->
+            <div v-if="pendingReturns.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #FDE68A;">
+                <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #FFFBEB; border-color: #FDE68A;">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-full" style="background: #FEF3C7;">
+                        <Clock class="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-amber-800">Menunggu Konfirmasi Admin</h2>
+                        <p class="text-xs text-amber-600">Request pengembalian sudah dikirim, menunggu persetujuan</p>
+                    </div>
+                </div>
+                <div class="divide-y" style="border-color: #FEF9C3;">
+                    <div v-for="borrowing in pendingReturns" :key="borrowing.id" class="flex items-center justify-between p-5 hover:bg-amber-50 transition">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style="background: #FEF3C7;">
+                                <BookOpen class="h-5 w-5 text-amber-500" />
                             </div>
                             <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-white">{{ borrowing.book.judul }}</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ borrowing.book.pengarang }}</p>
-                                <div class="mt-2 flex flex-wrap items-center gap-3 text-sm">
-                                    <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                                        <Calendar class="h-4 w-4" />
-                                        Request: {{ formatDate(borrowing.return_requested_at || '') }}
-                                    </span>
-                                </div>
+                                <p class="font-semibold" style="color: #5C3D1E;">{{ borrowing.book.judul }}</p>
+                                <p class="text-sm" style="color: #9A7050;">{{ borrowing.book.pengarang }}</p>
+                                <p class="mt-1 text-xs text-amber-600">
+                                    Request dikirim: {{ formatDate(borrowing.return_requested_at || '') }}
+                                </p>
                             </div>
                         </div>
-                        <div>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
-                                <Clock class="h-4 w-4" />
-                                Menunggu Persetujuan
-                            </span>
-                        </div>
+                        <span class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold" style="background: #FEF3C7; color: #92400E;">
+                            <Clock class="h-3.5 w-3.5" />
+                            Menunggu Admin
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <!-- Return History -->
-            <div class="rounded-xl border bg-white p-6 dark:bg-gray-800 dark:border-gray-700">
-                <h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Riwayat Pengembalian</h2>
-
-                <div v-if="returnHistory.length > 0" class="overflow-x-auto">
+            <!-- ══ RETURN HISTORY ══ -->
+            <div v-if="returnHistory.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #D1D5DB;">
+                <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #F9FAFB; border-color: #E5E7EB;">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
+                        <CheckCircle class="h-5 w-5 text-gray-500" />
+                    </div>
+                    <h2 class="font-bold" style="color: #5C3D1E;">Riwayat Pengembalian</h2>
+                </div>
+                <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
+                        <thead style="background: #F9FAFB;">
                             <tr>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Buku</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Tgl Pinjam</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Tgl Kembali</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Denda</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Buku</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Tgl Pinjam</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Tgl Kembali</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Status</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Denda</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr v-for="item in returnHistory" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                <td class="px-4 py-3">
-                                    <p class="font-medium text-gray-900 dark:text-white">{{ item.book.judul }}</p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ item.book.pengarang }}</p>
+                        <tbody class="divide-y" style="border-color: #F3F4F6;">
+                            <tr v-for="item in returnHistory" :key="item.id" class="hover:bg-orange-50 transition">
+                                <td class="px-5 py-4">
+                                    <p class="font-semibold text-sm" style="color: #5C3D1E;">{{ item.book.judul }}</p>
+                                    <p class="text-xs" style="color: #9A7050;">{{ item.book.pengarang }}</p>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                    {{ formatDate(item.tanggal_pinjam) }}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                    {{ formatDate(item.tanggal_dikembalikan || item.tanggal_kembali) }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span :class="[
-                                        'rounded-full px-2 py-1 text-xs font-medium',
-                                        item.status === 'dikembalikan' 
-                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400'
-                                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400'
-                                    ]">
+                                <td class="px-5 py-4 text-sm" style="color: #5C3D1E;">{{ formatDate(item.tanggal_pinjam) }}</td>
+                                <td class="px-5 py-4 text-sm" style="color: #5C3D1E;">{{ formatDate(item.tanggal_dikembalikan || item.tanggal_kembali) }}</td>
+                                <td class="px-5 py-4">
+                                    <span class="rounded-full px-3 py-1 text-xs font-bold"
+                                        :style="item.status === 'dikembalikan' ? 'background:#DCFCE7; color:#166534' : 'background:#FEE2E2; color:#991B1B'">
                                         {{ item.status === 'dikembalikan' ? 'Dikembalikan' : 'Terlambat' }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3">
-                                    <span v-if="item.denda > 0" class="font-medium text-red-600 dark:text-red-400">
-                                        {{ formatCurrency(item.denda) }}
-                                    </span>
-                                    <span v-else class="text-gray-400">-</span>
+                                <td class="px-5 py-4">
+                                    <span v-if="item.denda > 0" class="font-bold text-red-600">{{ formatCurrency(item.denda) }}</span>
+                                    <span v-else class="text-gray-300">—</span>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-
-                <div v-else class="py-8 text-center text-gray-500 dark:text-gray-400">
-                    Belum ada riwayat pengembalian
-                </div>
             </div>
         </div>
 
-        <!-- Confirm Modal -->
+        <!-- ══ CONFIRM MODAL ══ -->
         <Teleport to="body">
-            <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-                    <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Request Pengembalian Buku</h3>
-                    <div class="mb-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                        <p class="font-medium text-gray-900 dark:text-white">{{ selectedBorrowing?.book.judul }}</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedBorrowing?.book.pengarang }}</p>
-                    </div>
-                    <template v-if="selectedBorrowing && isOverdue(selectedBorrowing)">
-                        <div class="mb-4 rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
-                            <p class="flex items-center gap-2 text-sm font-medium text-red-700 dark:text-red-400">
-                                <AlertTriangle class="h-4 w-4" />
-                                Buku ini terlambat dikembalikan
-                            </p>
-                            <p class="mt-1 text-sm text-red-600 dark:text-red-300">
-                                Anda terlambat {{ Math.abs(getDaysRemaining(selectedBorrowing)) }} hari. Estimasi denda yang harus dibayar adalah <strong>{{ formatCurrency(Math.abs(getDaysRemaining(selectedBorrowing)) * 1000) }}</strong>.
+            <Transition name="modal">
+                <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" @click.self="closeConfirmModal">
+                    <div class="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
+                        <!-- Modal header -->
+                        <div class="px-6 pt-6 pb-4">
+                            <h3 class="text-xl font-bold" style="color: #5C3D1E; font-family: Georgia, serif;">Request Pengembalian</h3>
+                        </div>
+                        <!-- Book info -->
+                        <div class="mx-6 mb-4 rounded-2xl p-4" style="background: #FFF8F0; border: 1px solid #F0D6A8;">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: #FFF3E0;">
+                                    <BookOpen class="h-5 w-5" style="color: #E8A020;" />
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm" style="color: #5C3D1E;">{{ selectedBorrowing?.book.judul }}</p>
+                                    <p class="text-xs" style="color: #9A7050;">{{ selectedBorrowing?.book.pengarang }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Overdue warning -->
+                        <div v-if="selectedBorrowing && isOverdue(selectedBorrowing)" class="mx-6 mb-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+                            <div class="flex items-start gap-3">
+                                <AlertTriangle class="h-5 w-5 shrink-0 text-red-500 mt-0.5" />
+                                <div>
+                                    <p class="font-bold text-sm text-red-800">Buku Terlambat!</p>
+                                    <p class="text-xs text-red-600 mt-1">
+                                        Terlambat {{ Math.abs(getDaysRemaining(selectedBorrowing)) }} hari — Estimasi denda:
+                                        <strong>{{ formatCurrency(Math.abs(getDaysRemaining(selectedBorrowing)) * 1000) }}</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Info -->
+                        <div class="mx-6 mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                            <p class="text-sm text-amber-700">
+                                Request pengembalian akan dikirim ke admin untuk disetujui. Buku dinyatakan dikembalikan setelah admin menyetujui.
                             </p>
                         </div>
-                    </template>
-                    <div class="mb-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                        <p class="text-sm text-blue-700 dark:text-blue-300">
-                            Request pengembalian Anda akan dikirim ke admin untuk disetujui. Buku akan dikembalikan setelah admin menyetujui request Anda.
-                        </p>
-                    </div>
-                    <p class="mb-6 text-sm text-gray-600 dark:text-gray-400">
-                        Apakah Anda yakin ingin melakukan request pengembalian buku ini?
-                    </p>
-                    <div class="flex gap-3">
-                        <button
-                            @click="closeConfirmModal"
-                            class="flex-1 rounded-lg border px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            @click="confirmReturn"
-                            class="flex-1 rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white transition-colors hover:bg-emerald-700"
-                        >
-                            Konfirmasi
-                        </button>
+                        <!-- Actions -->
+                        <div class="flex gap-3 px-6 pb-6">
+                            <button @click="closeConfirmModal"
+                                class="flex-1 rounded-2xl border-2 px-4 py-3 font-semibold transition hover:bg-gray-50"
+                                style="border-color: #E5E7EB; color: #6B7280;">
+                                Batal
+                            </button>
+                            <button @click="confirmReturn"
+                                class="flex-1 flex items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold text-white transition hover:opacity-90"
+                                style="background: linear-gradient(135deg, #E8A020, #C4781A);">
+                                <RotateCcw class="h-4 w-4" />
+                                Konfirmasi
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Transition>
         </Teleport>
-    </AppLayout>
+    </SiswaLayout>
 </template>
+
+<style scoped>
+.modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+</style>

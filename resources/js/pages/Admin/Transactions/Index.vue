@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeftRight, Search, Eye, Trash2, RotateCcw, CheckCircle } from 'lucide-vue-next';
+import { ArrowLeftRight, Search, Eye, Trash2, RotateCcw, CheckCircle, FileSpreadsheet, Printer } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 interface User {
     name: string;
@@ -99,6 +99,14 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
+const exportUrl = (format: string) => {
+    const params = new URLSearchParams();
+    if (search.value) params.set('search', search.value);
+    if (status.value) params.set('status', status.value);
+    params.set('format', format);
+    return `/admin/transactions/export?${params.toString()}`;
+};
+
 const breadcrumbs = [
     { title: 'Admin', href: '/admin' },
     { title: 'Transaksi', href: '/admin/transactions' },
@@ -116,13 +124,33 @@ const breadcrumbs = [
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Transaksi Peminjaman</h1>
                     <p class="text-gray-600 dark:text-gray-400">Kelola peminjaman dan pengembalian buku</p>
                 </div>
-                <Link
-                    href="/admin/transactions/create"
-                    class="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-white transition-colors hover:bg-amber-600"
-                >
-                    <ArrowLeftRight class="h-5 w-5" />
-                    Transaksi Baru
-                </Link>
+                <div class="flex items-center gap-2">
+                    <!-- Export buttons -->
+                    <a
+                        :href="exportUrl('csv')"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-green-600 bg-white px-3 py-2 text-sm font-medium text-green-700 transition-colors hover:bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:border-green-500 dark:hover:bg-green-900/20"
+                        title="Export Excel/CSV"
+                    >
+                        <FileSpreadsheet class="h-4 w-4" />
+                        Excel
+                    </a>
+                    <a
+                        :href="exportUrl('pdf')"
+                        target="_blank"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-red-500 bg-white px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-500 dark:hover:bg-red-900/20"
+                        title="Export PDF"
+                    >
+                        <Printer class="h-4 w-4" />
+                        PDF
+                    </a>
+                    <Link
+                        href="/admin/transactions/create"
+                        class="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-white transition-colors hover:bg-amber-600"
+                    >
+                        <ArrowLeftRight class="h-5 w-5" />
+                        Transaksi Baru
+                    </Link>
+                </div>
             </div>
 
             <!-- Filters -->

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Setting;
 
 class Borrowing extends Model
 {
@@ -37,7 +38,7 @@ class Borrowing extends Model
     protected $casts = [
         'tanggal_pinjam' => 'date',
         'tanggal_kembali' => 'date',
-        'tanggal_dikembalikan' => 'date',
+        'tanggal_dikembalikan' => 'datetime',
         'denda' => 'integer',
         'payment_status' => 'string',
         'return_requested_at' => 'datetime',
@@ -72,21 +73,30 @@ class Borrowing extends Model
     }
 
     /**
-     * Calculate fine (denda) - Rp 1000 per day
+     * Calculate fine (denda) based on admin settings
      */
-    public function calculateFine(): float
+    public function calculateFine(): int
     {
-        $returnDate = $this->tanggal_dikembalikan ?? Carbon::now();
-        $deadline = Carbon::parse($this->tanggal_kembali);
-        
-        // Check if return date is after deadline
-        if ($returnDate->lte($deadline)) {
+        // Convert to date-only strings first, then parse — eliminates time-component bugs
+        $returnDateStr = $this->tanggal_dikembalikan
+            ? Carbon::parse($this->tanggal_dikembalikan)->toDateString()
+            : Carbon::today()->toDateString();
+
+        $returnDate = Carbon::parse($returnDateStr)->startOfDay();
+        $deadline   = Carbon::parse($this->tanggal_kembali)->startOfDay();
+
+        // Grace period
+        $graceDays         = (int) Setting::get('grace_period_days', 0);
+        $effectiveDeadline = $deadline->copy()->addDays($graceDays);
+
+        if ($returnDate->lte($effectiveDeadline)) {
             return 0;
         }
-        
-        $daysLate = $returnDate->diffInDays($deadline);
-        
-        return $daysLate * 1000; // Rp 1000 per day
+
+        $daysLate   = abs((int) $returnDate->diffInDays($effectiveDeadline));
+        $finePerDay = (int) Setting::get('fine_per_day', 1000);
+
+        return $daysLate * $finePerDay;
     }
 
     /**

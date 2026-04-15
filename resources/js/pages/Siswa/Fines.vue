@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { AlertTriangle, CreditCard, Clock, CheckCircle } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { AlertTriangle, CreditCard, Clock, CheckCircle, ShieldCheck, ChevronRight, BookOpen, TrendingUp } from 'lucide-vue-next';
+import SiswaLayout from '@/layouts/SiswaLayout.vue';
+import { computed } from 'vue';
 
-interface Book {
-    id: number;
-    judul: string;
-    pengarang: string;
-}
+interface Book { id: number; judul: string; pengarang: string; }
 
 interface Borrowing {
     id: number;
@@ -19,9 +16,7 @@ interface Borrowing {
     book: Book;
 }
 
-interface Member {
-    no_anggota: string;
-}
+interface Member { no_anggota: string; }
 
 const props = defineProps<{
     activeFines: Borrowing[];
@@ -33,205 +28,208 @@ const props = defineProps<{
     member: Member;
 }>();
 
-const breadcrumbs = [
-    { title: 'Dashboard Siswa', href: '/siswa' },
-    { title: 'Denda', href: '/siswa/fines' },
-];
+const allUnpaid = computed(() => [...props.unpaidFines, ...props.pendingFines]);
+const totalAll = computed(() => props.totalUnpaid + props.totalPending);
+const totalPaid = computed(() => props.paidFines.reduce((s, f) => s + f.denda, 0));
 
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    });
-};
+const formatDate = (date: string) => new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(amount);
-};
-
-const payFine = (borrowing: Borrowing) => {
-    if (confirm(`Apakah Anda yakin ingin membayar denda ${formatCurrency(borrowing.denda)} untuk buku "${borrowing.book.judul}"?`)) {
-        router.post(`/siswa/fines/${borrowing.id}/pay`);
-    }
-};
+const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
+    style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+}).format(amount);
 
 const getDaysLate = (borrowing: Borrowing) => {
     const today = new Date();
     const returnDate = new Date(borrowing.tanggal_kembali);
-    const diffTime = today.getTime() - returnDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
+    const diff = Math.ceil((today.getTime() - returnDate.getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+};
+
+const payFine = (borrowing: Borrowing) => {
+    if (confirm(`Konfirmasi pembayaran denda ${formatCurrency(borrowing.denda)} untuk buku "${borrowing.book.judul}"?\n\nPembayaran dilakukan secara tunai di kasir perpustakaan.`)) {
+        router.post(`/siswa/fines/${borrowing.id}/pay`);
+    }
 };
 </script>
 
 <template>
-    <Head title="Denda Saya" />
-
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 p-6">
-            <!-- Header -->
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Denda Saya</h1>
-                <p class="text-gray-600 dark:text-gray-400">Kelola dan bayar denda keterlambatan</p>
+    <Head title="Denda Saya — E-Perpustakaan" />
+    <SiswaLayout>
+        <!-- ══ HERO HEADER ══ -->
+        <section style="background: linear-gradient(135deg, #5C3D1E 0%, #3D2810 100%);" class="relative overflow-hidden py-12 px-6">
+            <div class="pointer-events-none absolute inset-0">
+                <div class="absolute right-0 top-0 h-48 w-48 rounded-full opacity-10" style="background: #E8A020;"></div>
             </div>
-
-            <!-- Stats -->
-            <div class="grid gap-4 md:grid-cols-2">
-                <div class="rounded-xl border bg-gradient-to-br from-red-50 to-red-100 p-6 dark:from-red-900/20 dark:to-red-800/20 dark:border-red-800">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-red-600 dark:text-red-400">Denda Belum Dibayar</p>
-                            <p class="text-2xl font-bold text-red-900 dark:text-red-100">{{ formatCurrency(totalUnpaid) }}</p>
-                        </div>
-                        <div class="rounded-full bg-red-500 p-3">
-                            <AlertTriangle class="h-6 w-6 text-white" />
-                        </div>
-                    </div>
+            <div class="relative mx-auto max-w-4xl">
+                <div class="flex items-center gap-2 mb-4">
+                    <a href="/" class="text-sm text-white opacity-60 hover:opacity-100 transition-opacity">Beranda</a>
+                    <ChevronRight class="h-4 w-4 text-white opacity-40" />
+                    <span class="text-sm text-white font-semibold">Denda Saya</span>
                 </div>
+                <h1 class="text-3xl font-bold text-white" style="font-family: Georgia, serif;">💰 Denda Saya</h1>
+                <p class="mt-1 text-white opacity-70">Riwayat dan pembayaran denda keterlambatan</p>
+            </div>
+        </section>
 
-                <div class="rounded-xl border bg-gradient-to-br from-amber-50 to-amber-100 p-6 dark:from-amber-900/20 dark:to-amber-800/20 dark:border-amber-800">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-amber-600 dark:text-amber-400">Menunggu Konfirmasi</p>
-                            <p class="text-2xl font-bold text-amber-900 dark:text-amber-100">{{ formatCurrency(totalPending) }}</p>
-                        </div>
-                        <div class="rounded-full bg-amber-500 p-3">
-                            <Clock class="h-6 w-6 text-white" />
-                        </div>
-                    </div>
+        <div class="mx-auto max-w-4xl px-6 py-8 flex flex-col gap-6 pb-16">
+
+            <!-- ══ ALERT: Peminjaman diblokir ══ -->
+            <div v-if="totalAll > 0" class="flex items-start gap-4 rounded-2xl border-2 border-red-200 bg-red-50 p-5">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+                    <AlertTriangle class="h-5 w-5 text-red-600" />
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-red-800">⛔ Peminjaman Anda Diblokir</p>
+                    <p class="mt-1 text-sm text-red-700">
+                        Anda memiliki total denda belum lunas sebesar <strong>{{ formatCurrency(totalAll) }}</strong>.
+                        Lunasi seluruh denda di bawah agar dapat meminjam buku kembali.
+                    </p>
                 </div>
             </div>
+            <div v-else class="flex items-center gap-4 rounded-2xl border-2 border-green-200 bg-green-50 p-5">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
+                    <ShieldCheck class="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                    <p class="font-bold text-green-800">✅ Status Bersih</p>
+                    <p class="text-sm text-green-700">Anda tidak memiliki denda. Bebas meminjam buku!</p>
+                </div>
+            </div>
 
-            <!-- Active Fines (Berjalan) -->
-            <div v-if="activeFines && activeFines.length > 0" class="rounded-xl border bg-white p-6 dark:bg-gray-800">
-                <div class="mb-4 flex items-center gap-2">
-                    <Clock class="h-5 w-5 text-orange-500" />
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Estimasi Denda Berjalan</h2>
+            <!-- ══ STAT CARDS ══ -->
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div class="rounded-2xl border-2 p-5 text-center transition hover:shadow-md" style="border-color: #EF4444; background: #FFF5F5;">
+                    <p class="text-xs font-bold uppercase tracking-wider text-red-500 mb-1">Belum Lunas</p>
+                    <p class="text-2xl font-black" style="color: #DC2626;">{{ formatCurrency(totalAll) }}</p>
+                    <p class="mt-1 text-xs text-red-400">{{ allUnpaid.length }} item</p>
                 </div>
-                <div class="mb-4 rounded-lg bg-orange-50 p-3 text-sm text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
-                    Buku di bawah ini telah melewati batas waktu tetapi belum Anda kembalikan atau masih menunggu konfirmasi pengembalian.
-                    Denda akan diakumulasikan Rp 1.000 / hari keterlambatan.
+                <div class="rounded-2xl border-2 p-5 text-center transition hover:shadow-md" style="border-color: #F59E0B; background: #FFFBEB;">
+                    <p class="text-xs font-bold uppercase tracking-wider text-amber-500 mb-1">Denda Berjalan</p>
+                    <p class="text-2xl font-black text-amber-600">{{ activeFines.length }}</p>
+                    <p class="mt-1 text-xs text-amber-400">buku terlambat</p>
                 </div>
-                <div class="space-y-3">
-                    <div
-                        v-for="fine in activeFines"
-                        :key="'active-'+fine.id"
-                        class="flex items-center justify-between rounded-lg bg-orange-50/50 p-4 border border-orange-100 dark:bg-orange-900/10 dark:border-orange-800"
-                    >
-                        <div>
-                            <p class="font-medium text-gray-900 dark:text-white">{{ fine.book.judul }}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Batas Kembali: {{ formatDate(fine.tanggal_kembali) }}
+                <div class="rounded-2xl border-2 p-5 text-center transition hover:shadow-md" style="border-color: #22C55E; background: #F0FDF4;">
+                    <p class="text-xs font-bold uppercase tracking-wider text-green-500 mb-1">Sudah Lunas</p>
+                    <p class="text-2xl font-black text-green-600">{{ formatCurrency(totalPaid) }}</p>
+                    <p class="mt-1 text-xs text-green-400">{{ paidFines.length }} item</p>
+                </div>
+            </div>
+
+            <!-- ══ ESTIMASI DENDA BERJALAN ══ -->
+            <div v-if="activeFines.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #FED7AA;">
+                <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #FFF7ED; border-color: #FED7AA;">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-full" style="background: #FFEDD5;">
+                        <Clock class="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div>
+                        <h2 class="font-bold" style="color: #5C3D1E;">Estimasi Denda Berjalan</h2>
+                        <p class="text-xs" style="color: #9A7050;">Buku terlambat dikembalikan — denda terus bertambah</p>
+                    </div>
+                </div>
+                <div class="divide-y" style="border-color: #FFF3E0;">
+                    <div v-for="fine in activeFines" :key="'active-' + fine.id" class="flex items-center justify-between px-6 py-4 hover:bg-orange-50 transition">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: #FFF3E0;">
+                                <BookOpen class="h-5 w-5" style="color: #E8A020;" />
+                            </div>
+                            <div>
+                                <p class="font-semibold text-sm" style="color: #5C3D1E;">{{ fine.book.judul }}</p>
+                                <p class="text-xs mt-0.5" style="color: #9A7050;">Batas: {{ formatDate(fine.tanggal_kembali) }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-700 mb-1">
+                                +{{ getDaysLate(fine) }} hari
+                            </span>
+                            <p class="text-base font-black" style="color: #C4781A;">
+                                {{ formatCurrency(getDaysLate(fine) * 1000) }}
                             </p>
                         </div>
-                        <div class="flex flex-col items-end gap-1">
-                            <span class="rounded-full bg-red-100 px-3 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
-                                Terlambat {{ getDaysLate(fine) }} hari
-                            </span>
-                            <span class="text-lg font-bold text-orange-600 dark:text-orange-400">
-                                Estimasi: {{ formatCurrency(getDaysLate(fine) * 1000) }}
-                            </span>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Unpaid Fines -->
-            <div class="rounded-xl border bg-white p-6 dark:bg-gray-800">
-                <div class="mb-4 flex items-center gap-2">
-                    <AlertTriangle class="h-5 w-5 text-red-500" />
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Denda Belum Dibayar</h2>
+            <!-- ══ DENDA HARUS DIBAYAR ══ -->
+            <div class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #FCA5A5;">
+                <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #FFF5F5; border-color: #FCA5A5;">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-red-100">
+                        <AlertTriangle class="h-5 w-5 text-red-500" />
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-red-800">Denda Harus Dibayar</h2>
+                        <p class="text-xs text-red-500">Bayar di kasir perpustakaan untuk membuka akses pinjam</p>
+                    </div>
                 </div>
-                <div class="space-y-3">
-                    <div
-                        v-for="fine in unpaidFines"
-                        :key="fine.id"
-                        class="flex items-center justify-between rounded-lg bg-red-50 p-4 dark:bg-red-900/20"
-                    >
-                        <div>
-                            <p class="font-medium text-gray-900 dark:text-white">{{ fine.book.judul }}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Kembali: {{ formatDate(fine.tanggal_dikembalikan || fine.tanggal_kembali) }}
-                            </p>
+                <!-- Has fines -->
+                <div v-if="allUnpaid.length > 0" class="divide-y" style="border-color: #FEE2E2;">
+                    <div v-for="fine in allUnpaid" :key="fine.id" class="flex items-center justify-between px-6 py-4 hover:bg-red-50 transition">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100">
+                                <BookOpen class="h-5 w-5 text-red-500" />
+                            </div>
+                            <div>
+                                <p class="font-semibold text-sm" style="color: #5C3D1E;">{{ fine.book.judul }}</p>
+                                <p class="text-xs" style="color: #9A7050;">{{ fine.book.pengarang }}</p>
+                                <p class="text-xs mt-0.5 text-gray-400">Dikembalikan: {{ formatDate(fine.tanggal_dikembalikan || fine.tanggal_kembali) }}</p>
+                            </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-lg font-bold text-red-600 dark:text-red-400">
-                                {{ formatCurrency(fine.denda) }}
-                            </span>
+                            <p class="text-lg font-black text-red-600">{{ formatCurrency(fine.denda) }}</p>
                             <button
                                 @click="payFine(fine)"
-                                class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+                                class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90 active:scale-95 shadow-sm"
+                                style="background: linear-gradient(135deg, #16A34A, #15803D);"
                             >
                                 <CreditCard class="h-4 w-4" />
-                                Bayar
+                                Bayar Tunai
                             </button>
                         </div>
                     </div>
-                    <div v-if="unpaidFines.length === 0" class="py-8 text-center text-gray-500">
-                        Tidak ada denda yang belum dibayar 🎉
+                </div>
+                <!-- No fines -->
+                <div v-else class="flex flex-col items-center py-12 text-center">
+                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                        <ShieldCheck class="h-8 w-8 text-green-500" />
                     </div>
+                    <p class="font-bold" style="color: #5C3D1E;">Tidak ada denda yang harus dibayar 🎉</p>
+                    <p class="text-sm mt-1" style="color: #9A7050;">Anda bebas meminjam buku!</p>
                 </div>
             </div>
 
-            <!-- Pending Fines -->
-            <div v-if="pendingFines.length > 0" class="rounded-xl border bg-white p-6 dark:bg-gray-800">
-                <div class="mb-4 flex items-center gap-2">
-                    <Clock class="h-5 w-5 text-amber-500" />
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Menunggu Konfirmasi Admin</h2>
+            <!-- ══ RIWAYAT PEMBAYARAN ══ -->
+            <div v-if="paidFines.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #86EFAC;">
+                <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #F0FDF4; border-color: #86EFAC;">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-green-100">
+                        <CheckCircle class="h-5 w-5 text-green-500" />
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-green-800">Riwayat Pembayaran</h2>
+                        <p class="text-xs text-green-600">Denda yang sudah dilunasi</p>
+                    </div>
+                    <div class="ml-auto">
+                        <span class="rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-700">
+                            Total {{ formatCurrency(totalPaid) }}
+                        </span>
+                    </div>
                 </div>
-                <div class="space-y-3">
-                    <div
-                        v-for="fine in pendingFines"
-                        :key="fine.id"
-                        class="flex items-center justify-between rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20"
-                    >
-                        <div>
-                            <p class="font-medium text-gray-900 dark:text-white">{{ fine.book.judul }}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Kembali: {{ formatDate(fine.tanggal_dikembalikan || fine.tanggal_kembali) }}
-                            </p>
+                <div class="divide-y" style="border-color: #DCFCE7;">
+                    <div v-for="fine in paidFines" :key="'paid-' + fine.id" class="flex items-center justify-between px-6 py-4 hover:bg-green-50 transition">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-100">
+                                <BookOpen class="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p class="font-semibold text-sm" style="color: #5C3D1E;">{{ fine.book.judul }}</p>
+                                <p class="text-xs" style="color: #9A7050;">{{ fine.book.pengarang }}</p>
+                            </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-lg font-bold text-amber-600 dark:text-amber-400">
-                                {{ formatCurrency(fine.denda) }}
-                            </span>
-                            <span class="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
-                                Menunggu
-                            </span>
+                            <span class="font-bold" style="color: #5C3D1E;">{{ formatCurrency(fine.denda) }}</span>
+                            <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">✓ Lunas</span>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Paid Fines (History) -->
-            <div v-if="paidFines.length > 0" class="rounded-xl border bg-white p-6 dark:bg-gray-800">
-                <div class="mb-4 flex items-center gap-2">
-                    <CheckCircle class="h-5 w-5 text-green-500" />
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Riwayat Pembayaran</h2>
-                </div>
-                <div class="space-y-3">
-                    <div
-                        v-for="fine in paidFines"
-                        :key="fine.id"
-                        class="flex items-center justify-between rounded-lg bg-green-50 p-4 dark:bg-green-900/20"
-                    >
-                        <div>
-                            <p class="font-medium text-gray-900 dark:text-white">{{ fine.book.judul }}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ fine.book.pengarang }}
-                            </p>
-                        </div>
-                        <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/50 dark:text-green-400">
-                            Lunas
-                        </span>
                     </div>
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </SiswaLayout>
 </template>
