@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BorrowApprovalController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -22,6 +23,30 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Services\FonnteService;
+
+// ─── DEBUG WA & CLEAR CACHE (Paling atas agar tidak 404) ────────
+Route::get('/test-wa', function() {
+    try {
+        Artisan::call('route:clear');
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+    } catch (\Exception $e) {}
+
+    $phone = request('phone');
+    $token = config('services.fonnte.token');
+    
+    if (!$phone) return "Berhasil Clear Cache! Gunakan parameter ?phone=nomorwa untuk tes WA.";
+    
+    $fonnte = new FonnteService();
+    $result = $fonnte->send($phone, "Test Langsung dari Root - " . now());
+    
+    return [
+        'info' => 'Cache telah dibersihkan otomatis',
+        'target' => $phone,
+        'token_configured' => $token ? 'Yes (Starts with: ' . substr($token, 0, 5) . '...)' : 'No',
+        'status' => $result ? 'Success' : 'Failed',
+    ];
+});
 
 // ─── Public Landing ───────────────────────────────────────────────
 Route::get('/', [LandingController::class, 'index'])->name('home');
@@ -121,22 +146,4 @@ Route::prefix('siswa')
         Route::get('kartu', [CardController::class, 'show'])->name('card');
     });
     
-// ─── Debug WA (Hapus setelah berhasil) ──────────────────────────
-Route::get('/test-wa', function() {
-    $phone = request('phone');
-    $token = config('services.fonnte.token');
-    
-    if (!$phone) return "Gunakan parameter ?phone=nomorwa (contoh: /test-wa?phone=628xxx)";
-    
-    $fonnte = new FonnteService();
-    $result = $fonnte->send($phone, "Test dari Sistem Perpustakaan - " . now());
-    
-    return [
-        'target' => $phone,
-        'token_configured' => $token ? 'Yes (Starts with: ' . substr($token, 0, 5) . '...)' : 'No',
-        'status' => $result ? 'Success' : 'Failed',
-        'check_logs' => 'Lihat log di Railway/Storage/Logs untuk detail raw response'
-    ];
-});
-
 require __DIR__.'/settings.php';
