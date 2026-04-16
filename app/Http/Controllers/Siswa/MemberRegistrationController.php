@@ -38,7 +38,6 @@ class MemberRegistrationController extends Controller
         $validated = $request->validate([
             'kelas'         => 'required|string|max:50',
             'alamat'        => 'required|string|max:255',
-            'telepon'       => 'required|string|max:20',
             'tanggal_lahir' => 'nullable|date',
             'jenis_kelamin' => 'nullable|in:L,P',
             'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -61,7 +60,6 @@ class MemberRegistrationController extends Controller
                 'no_anggota'    => $member?->no_anggota ?? Member::generateMemberNumber(),
                 'kelas'         => $validated['kelas'],
                 'alamat'        => $validated['alamat'],
-                'telepon'       => $validated['telepon'],
                 'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
                 'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
                 'foto'          => $fotoPath,

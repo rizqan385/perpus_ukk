@@ -97,8 +97,25 @@ Member::firstOrCreate(
         ];
 
         foreach ($books as $book) {
-            Book::firstOrCreate
-            ($book);
+            Book::firstOrCreate($book);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // 🧪 DATA DEMO UNTUK UKOM (Otomatis Telat/Denda)
+        // ══════════════════════════════════════════════════════════════
+        $targetBook = Book::where('judul', 'Laskar Pelangi')->first();
+        if ($siswa->member && $targetBook) {
+            \App\Models\Borrowing::firstOrCreate(
+                [
+                    'member_id' => $siswa->member->id, 
+                    'book_id' => $targetBook->id, 
+                    'status' => 'dipinjam'
+                ],
+                [
+                    'tanggal_pinjam' => now()->subDays(10),
+                    'tanggal_kembali' => now()->subDays(3), // Sudah telat 3 hari
+                ]
+            );
         }
     }
 }

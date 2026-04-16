@@ -50,6 +50,39 @@ const payFine = (borrowing: Borrowing) => {
         router.post(`/siswa/fines/${borrowing.id}/pay`);
     }
 };
+
+const payOnline = async (borrowing: Borrowing) => {
+    try {
+        const response = await fetch(`/siswa/payment/${borrowing.id}/token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.token) {
+            // @ts-ignore - window.snap is from Midtrans script
+            window.snap.pay(data.token, {
+                onSuccess: () => {
+                    router.get(`/siswa/payment/${borrowing.id}/success`);
+                },
+                onPending: () => {
+                    alert('Pembayaran tertunda, silakan selesaikan di aplikasi atau outlet pilihan Anda.');
+                    router.reload();
+                },
+                onError: () => alert('Pembayaran gagal, silakan coba lagi.'),
+                onClose: () => console.log('Popup ditutup')
+            });
+        } else {
+            alert(data.error || 'Gagal menyiapkan pembayaran.');
+        }
+    } catch (e) {
+        alert('Terjadi kesalahan koneksi ke server.');
+    }
+};
 </script>
 
 <template>
@@ -175,14 +208,23 @@ const payFine = (borrowing: Borrowing) => {
                         </div>
                         <div class="flex items-center gap-3">
                             <p class="text-lg font-black text-red-600">{{ formatCurrency(fine.denda) }}</p>
-                            <button
-                                @click="payFine(fine)"
-                                class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90 active:scale-95 shadow-sm"
-                                style="background: linear-gradient(135deg, #16A34A, #15803D);"
-                            >
-                                <CreditCard class="h-4 w-4" />
-                                Bayar Tunai
-                            </button>
+                            <div class="flex flex-col gap-2">
+                                <button
+                                    @click="payOnline(fine)"
+                                    class="flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 active:scale-95 shadow-sm"
+                                    style="background: linear-gradient(135deg, #10B981, #059669);"
+                                >
+                                    <TrendingUp class="h-4 w-4" />
+                                    Bayar Online
+                                </button>
+                                <button
+                                    @click="payFine(fine)"
+                                    class="flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 transition"
+                                >
+                                    <CreditCard class="h-3 w-3" />
+                                    Bayar Tunai
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

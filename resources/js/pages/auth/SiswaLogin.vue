@@ -81,46 +81,12 @@ const submit = () => {
             <!-- Center content -->
             <div class="relative space-y-8">
                 <!-- Quote -->
-                <div>
+                <div class="py-10">
                     <div style="width: 36px; height: 3px; background: linear-gradient(90deg,#E8A020,#C4781A); border-radius: 2px; margin-bottom: 20px;"></div>
                     <p class="text-3xl font-bold leading-snug text-white">
                         Membaca adalah jendela<br/>menuju dunia yang<br/>tak terbatas.
                     </p>
-                    <p class="mt-4 text-sm opacity-50 text-white italic">— Bergabung dengan ribuan pembaca aktif</p>
-                </div>
-
-                <!-- Feature cards -->
-                <div class="space-y-3">
-                    <!-- Card 1 -->
-                    <div class="flex items-center gap-4 rounded-2xl p-4" style="background: rgba(255,255,255,0.07); backdrop-filter: blur(8px); border: 1px solid rgba(232,160,32,0.2);">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style="background: rgba(232,160,32,0.2);">
-                            <BookMarked class="h-5 w-5" style="color: #E8A020;" />
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Koleksi Lengkap</p>
-                            <p class="text-xs opacity-50 text-white">Akses ribuan buku dari berbagai kategori</p>
-                        </div>
-                    </div>
-                    <!-- Card 2 -->
-                    <div class="flex items-center gap-4 rounded-2xl p-4" style="background: rgba(255,255,255,0.07); backdrop-filter: blur(8px); border: 1px solid rgba(232,160,32,0.2);">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style="background: rgba(232,160,32,0.2);">
-                            <Search class="h-5 w-5" style="color: #E8A020;" />
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Cari & Pinjam Mudah</p>
-                            <p class="text-xs opacity-50 text-white">Temukan dan ajukan peminjaman online</p>
-                        </div>
-                    </div>
-                    <!-- Card 3 -->
-                    <div class="flex items-center gap-4 rounded-2xl p-4" style="background: rgba(255,255,255,0.07); backdrop-filter: blur(8px); border: 1px solid rgba(232,160,32,0.2);">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style="background: rgba(232,160,32,0.2);">
-                            <Bell class="h-5 w-5" style="color: #E8A020;" />
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Notifikasi Otomatis</p>
-                            <p class="text-xs opacity-50 text-white">Pengingat jatuh tempo via WhatsApp</p>
-                        </div>
-                    </div>
+                    <p class="mt-4 text-sm opacity-50 text-white italic">— Selamat datang di Perpustakaan Elektronik.</p>
                 </div>
             </div>
 
@@ -198,7 +164,6 @@ const submit = () => {
                             <input v-model="form.remember" type="checkbox" class="rounded" style="accent-color: #E8A020;" />
                             Ingat saya
                         </label>
-                        <a href="/forgot-password" class="text-sm font-medium hover:underline" style="color: #C4781A;">Lupa password?</a>
                     </div>
 
                     <!-- Submit -->
@@ -216,10 +181,6 @@ const submit = () => {
                 <p class="mt-6 text-center text-sm" style="color: #9A7050;">
                     Belum punya akun?
                     <a href="/siswa/daftar" class="font-semibold hover:underline" style="color: #C4781A;">Daftar Sekarang</a>
-                </p>
-                <p class="mt-3 text-center text-xs" style="color: #C0A080;">
-                    Admin?
-                    <a href="/login" class="hover:underline" style="color: #9A7050;">Masuk di sini</a>
                 </p>
             </div>
         </div>

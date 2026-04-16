@@ -24,6 +24,7 @@ const props = defineProps<{
 }>();
 
 const search = ref(props.filters.search || '');
+const processingId = ref<number | null>(null);
 
 const applySearch = () =>
     router.get('/admin/borrow-approvals', { search: search.value }, { preserveState: true });
@@ -41,16 +42,31 @@ const formatDate = (d: string) =>
 
 const coverUrl = (book: Book) => book.cover_image ? `/storage/${book.cover_image}` : null;
 
-const approve = (id: number) =>
-    router.post(`/admin/borrow-approvals/${id}/approve`, {}, { preserveScroll: true });
-
-const reject = (id: number) => {
-    if (confirm('Tolak permintaan pinjam ini?'))
-        router.post(`/admin/borrow-approvals/${id}/reject`, {}, { preserveScroll: true });
+const approve = (id: number) => {
+    processingId.value = id;
+    router.post(`/admin/borrow-approvals/${id}/approve`, {}, { 
+        preserveScroll: true,
+        onFinish: () => processingId.value = null 
+    });
 };
 
-const approveReturn = (id: number) =>
-    router.post(`/admin/borrow-approvals/${id}/approve-return`, {}, { preserveScroll: true });
+const reject = (id: number) => {
+    if (confirm('Tolak permintaan pinjam ini?')) {
+        processingId.value = id;
+        router.post(`/admin/borrow-approvals/${id}/reject`, {}, { 
+            preserveScroll: true,
+            onFinish: () => processingId.value = null 
+        });
+    }
+};
+
+const approveReturn = (id: number) => {
+    processingId.value = id;
+    router.post(`/admin/borrow-approvals/${id}/approve-return`, {}, { 
+        preserveScroll: true,
+        onFinish: () => processingId.value = null 
+    });
+};
 
 const breadcrumbs = [
     { title: 'Admin', href: '/admin' },
@@ -164,10 +180,25 @@ const breadcrumbs = [
                                 <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{{ formatDate(req.tanggal_pinjam) }}</td>
                                 <td class="px-4 py-4">
                                     <div class="flex items-center gap-2">
-                                        <button @click="approve(req.id)" class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90" style="background: #16A34A;">
-                                            <Check class="h-4 w-4" /> Setujui
+                                        <button 
+                                            @click="approve(req.id)" 
+                                            :disabled="processingId === req.id"
+                                            class="flex min-w-[90px] items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50" 
+                                            style="background: #16A34A;"
+                                        >
+                                            <template v-if="processingId === req.id">
+                                                <div class="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                            </template>
+                                            <template v-else>
+                                                <Check class="h-4 w-4" /> Setujui
+                                            </template>
                                         </button>
-                                        <button @click="reject(req.id)" class="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20" style="border-color: #EF4444;">
+                                        <button 
+                                            @click="reject(req.id)" 
+                                            :disabled="processingId === req.id"
+                                            class="flex min-w-[80px] items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-900/20" 
+                                            style="border-color: #EF4444;"
+                                        >
                                             <X class="h-4 w-4" /> Tolak
                                         </button>
                                     </div>
@@ -224,8 +255,19 @@ const breadcrumbs = [
                                 </td>
                                 <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{{ formatDate(req.tanggal_kembali) }}</td>
                                 <td class="px-4 py-4">
-                                    <button @click="approveReturn(req.id)" class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90" style="background: #7C3AED;">
-                                        <Check class="h-4 w-4" /> Konfirmasi Kembali
+                                    <button 
+                                        @click="approveReturn(req.id)" 
+                                        :disabled="processingId === req.id"
+                                        class="flex min-w-[150px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50" 
+                                        style="background: #7C3AED;"
+                                    >
+                                        <template v-if="processingId === req.id">
+                                            <div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                            Memproses...
+                                        </template>
+                                        <template v-else>
+                                            <Check class="h-4 w-4" /> Konfirmasi Kembali
+                                        </template>
                                     </button>
                                 </td>
                             </tr>

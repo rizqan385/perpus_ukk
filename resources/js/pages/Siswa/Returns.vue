@@ -29,6 +29,7 @@ const props = defineProps<{
 
 const selectedBorrowing = ref<Borrowing | null>(null);
 const showConfirmModal = ref(false);
+const isProcessing = ref(false);
 
 const isOverdue = (b: Borrowing) => new Date(b.tanggal_kembali) < new Date();
 
@@ -41,9 +42,20 @@ const openConfirmModal = (b: Borrowing) => { selectedBorrowing.value = b; showCo
 const closeConfirmModal = () => { selectedBorrowing.value = null; showConfirmModal.value = false; };
 
 const confirmReturn = () => {
-    if (!selectedBorrowing.value) return;
+    if (!selectedBorrowing.value || isProcessing.value) return;
+    
+    isProcessing.value = true;
     router.post(`/siswa/returns/${selectedBorrowing.value.id}/request`, {}, {
-        onSuccess: () => closeConfirmModal()
+        onSuccess: () => {
+            closeConfirmModal();
+            isProcessing.value = false;
+        },
+        onError: () => {
+            isProcessing.value = false;
+        },
+        onFinish: () => {
+            isProcessing.value = false;
+        }
     });
 };
 
@@ -252,11 +264,18 @@ const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
                                 style="border-color: #E5E7EB; color: #6B7280;">
                                 Batal
                             </button>
-                            <button @click="confirmReturn"
-                                class="flex-1 flex items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold text-white transition hover:opacity-90"
+                             <button @click="confirmReturn"
+                                :disabled="isProcessing"
+                                class="flex-1 flex items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold text-white transition hover:opacity-90 disabled:opacity-50"
                                 style="background: linear-gradient(135deg, #E8A020, #C4781A);">
-                                <RotateCcw class="h-4 w-4" />
-                                Konfirmasi
+                                <template v-if="isProcessing">
+                                    <Clock class="h-4 w-4 animate-spin" />
+                                    Memproses...
+                                </template>
+                                <template v-else>
+                                    <RotateCcw class="h-4 w-4" />
+                                    Konfirmasi
+                                </template>
                             </button>
                         </div>
                     </div>

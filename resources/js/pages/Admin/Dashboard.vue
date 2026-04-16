@@ -132,60 +132,85 @@ const breadcrumbs = [
     <Head title="Admin Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 p-6">
+        <div class="flex h-full flex-1 flex-col gap-6 p-6 lg:p-8 bg-gray-50/50 dark:bg-gray-950">
 
-            <!-- Page Header -->
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Admin</h1>
-                <p class="text-gray-600 dark:text-gray-400">Selamat datang di panel administrasi perpustakaan</p>
+            <!-- ══ HERO WELCOME ══ -->
+            <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+                <div class="relative z-10">
+                    <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+                        Selamat Datang, Admin! 👋
+                    </h1>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Pantau aktivitas perpustakaan hari ini. Semua sistem berjalan optimal.
+                    </p>
+                </div>
+                <!-- Dekorasi dipudarkan agar cocok dengan background putih -->
+                <div class="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-blue-50 dark:bg-blue-900/20 blur-3xl"></div>
+                <div class="absolute -bottom-10 right-20 h-40 w-40 rounded-full bg-amber-50 dark:bg-amber-900/20 blur-3xl"></div>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div class="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-5 dark:from-blue-900/20 dark:to-blue-800/20">
-                    <div class="flex items-center justify-between">
+            <!-- ══ STATS CARDS ══ -->
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Books -->
+                <div class="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-gray-800 border-b-4 border-blue-500">
+                    <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Total Buku</p>
-                            <p class="mt-1 text-4xl font-bold text-blue-900 dark:text-blue-100">{{ stats.total_books }}</p>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Arsip Buku</p>
+                            <h3 class="mt-1 text-4xl font-black text-gray-900 dark:text-white line-clamp-1">{{ stats.total_books }}</h3>
+                            <p class="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span> Koleksi Aktif
+                            </p>
                         </div>
-                        <div class="rounded-full bg-blue-500 p-3">
-                            <BookOpen class="h-6 w-6 text-white" />
+                        <div class="rounded-2xl bg-blue-50 p-3 text-blue-600 transition-transform group-hover:scale-110 dark:bg-blue-900/40">
+                            <BookOpen class="h-8 w-8" />
                         </div>
                     </div>
                 </div>
 
-                <div class="rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 p-5 dark:from-emerald-900/20 dark:to-emerald-800/20">
-                    <div class="flex items-center justify-between">
+                <!-- Members -->
+                <div class="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-gray-800 border-b-4 border-emerald-500">
+                    <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Total Anggota</p>
-                            <p class="mt-1 text-4xl font-bold text-emerald-900 dark:text-emerald-100">{{ stats.total_members }}</p>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Anggota Aktif</p>
+                            <h3 class="mt-1 text-4xl font-black text-gray-900 dark:text-white line-clamp-1">{{ stats.total_members }}</h3>
+                            <p class="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Member Terverifikasi
+                            </p>
                         </div>
-                        <div class="rounded-full bg-emerald-500 p-3">
-                            <Users class="h-6 w-6 text-white" />
+                        <div class="rounded-2xl bg-emerald-50 p-3 text-emerald-600 transition-transform group-hover:scale-110 dark:bg-emerald-900/40">
+                            <Users class="h-8 w-8" />
                         </div>
                     </div>
                 </div>
 
-                <div class="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 p-5 dark:from-amber-900/20 dark:to-amber-800/20">
-                    <div class="flex items-center justify-between">
+                <!-- Transactions -->
+                <div class="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-gray-800 border-b-4 border-amber-500">
+                    <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">Total Transaksi</p>
-                            <p class="mt-1 text-4xl font-bold text-amber-900 dark:text-amber-100">{{ stats.total_borrowings }}</p>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Transaksi</p>
+                            <h3 class="mt-1 text-4xl font-black text-gray-900 dark:text-white line-clamp-1">{{ stats.total_borrowings }}</h3>
+                            <p class="mt-2 text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Riwayat Hubungan
+                            </p>
                         </div>
-                        <div class="rounded-full bg-amber-500 p-3">
-                            <ArrowLeftRight class="h-6 w-6 text-white" />
+                        <div class="rounded-2xl bg-amber-50 p-3 text-amber-600 transition-transform group-hover:scale-110 dark:bg-amber-900/40">
+                            <ArrowLeftRight class="h-8 w-8" />
                         </div>
                     </div>
                 </div>
 
-                <div class="rounded-xl bg-gradient-to-br from-red-50 to-red-100 p-5 dark:from-red-900/20 dark:to-red-800/20">
-                    <div class="flex items-center justify-between">
+                <!-- Overdue -->
+                <div class="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-gray-800 border-b-4 border-red-500">
+                    <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">Terlambat</p>
-                            <p class="mt-1 text-4xl font-bold text-red-900 dark:text-red-100">{{ stats.overdue_borrowings }}</p>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Buku Terlambat</p>
+                            <h3 class="mt-1 text-4xl font-black text-gray-900 dark:text-white line-clamp-1">{{ stats.overdue_borrowings }}</h3>
+                            <p class="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span> Perlu Tindakan
+                            </p>
                         </div>
-                        <div class="rounded-full bg-red-500 p-3">
-                            <AlertTriangle class="h-6 w-6 text-white" />
+                        <div class="rounded-2xl bg-red-50 p-3 text-red-600 transition-transform group-hover:scale-110 dark:bg-red-900/40">
+                            <AlertTriangle class="h-8 w-8" />
                         </div>
                     </div>
                 </div>

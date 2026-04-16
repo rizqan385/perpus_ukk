@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Heart, User, LogIn, UserPlus, LayoutDashboard, LogOut, BookMarked, ArrowLeftRight, DollarSign, CreditCard, Menu, X } from 'lucide-vue-next';
+import { Home, Library, BookOpen, Heart, User, LogIn, UserPlus, LayoutDashboard, LogOut, BookMarked, ArrowLeftRight, DollarSign, CreditCard, Menu, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const page = usePage();
@@ -169,8 +169,12 @@ const logout = () => {
 
                         <!-- Menu Links -->
                         <div class="flex flex-col py-2 flex-grow">
-                            <Link href="/" class="px-6 py-4 text-base font-bold transition-colors hover:bg-orange-50 border-b" style="color: #5C3D1E; border-color: #F0D6A8;" @click="mobileMenuOpen=false">Beranda</Link>
-                            <Link href="/koleksi-buku" class="px-6 py-4 text-base font-bold transition-colors hover:bg-orange-50 border-b" style="color: #5C3D1E; border-color: #F0D6A8;" @click="mobileMenuOpen=false">Koleksi Buku</Link>
+                            <Link href="/" class="flex items-center gap-3 px-6 py-4 text-base font-bold transition-colors hover:bg-orange-50 border-b" style="color: #5C3D1E; border-color: #F0D6A8;" @click="mobileMenuOpen=false">
+                                <Home class="h-5 w-5" style="color: #E8A020;" /> Beranda
+                            </Link>
+                            <Link href="/koleksi-buku" class="flex items-center gap-3 px-6 py-4 text-base font-bold transition-colors hover:bg-orange-50 border-b" style="color: #5C3D1E; border-color: #F0D6A8;" @click="mobileMenuOpen=false">
+                                <Library class="h-5 w-5" style="color: #E8A020;" /> Koleksi Buku
+                            </Link>
                             
                             <template v-if="user">
                                 <Link href="/siswa/favorites" class="flex items-center gap-3 px-6 py-4 text-base font-bold border-b transition-colors hover:bg-orange-50" style="color: #5C3D1E; border-color: #F0D6A8;" @click="mobileMenuOpen=false">

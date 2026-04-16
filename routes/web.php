@@ -119,6 +119,12 @@ Route::prefix('siswa')
 
         // Member Card
         Route::get('kartu', [CardController::class, 'show'])->name('card');
+
+        // Midtrans Payment
+        Route::post('payment/{borrowing}/token', [\App\Http\Controllers\Siswa\PaymentController::class, 'getSnapToken'])->name('payment.token');
+        Route::get('payment/{borrowing}/success', [\App\Http\Controllers\Siswa\PaymentController::class, 'successPayment'])->name('payment.success');
     });
-    
+
+Route::post('/payment/midtrans/notification', [\App\Http\Controllers\Siswa\PaymentController::class, 'handleNotification'])->name('payment.notification');
+
 require __DIR__.'/settings.php';

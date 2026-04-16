@@ -62,9 +62,9 @@ class BorrowingController extends Controller
         }
 
         // Block if has unpaid fines
-        $unpaidFines = $member->borrowings()->where('denda', '>', 0)->whereNull('payment_status')->sum('denda');
-        if ($unpaidFines > 0) {
-            return back()->withErrors(['error' => 'Anda masih memiliki denda belum lunas sebesar Rp ' . number_format($unpaidFines, 0, ',', '.') . '. Harap bayar denda terlebih dahulu sebelum meminjam buku.']);
+        $unpaidFinesAmount = $member->borrowings()->where('denda', '>', 0)->whereNull('payment_status')->sum('denda');
+        if ($unpaidFinesAmount > 0) {
+            return redirect()->route('siswa.fines')->with('error', 'Anda memiliki denda sebesar Rp ' . number_format($unpaidFinesAmount, 0, ',', '.') . ' yang belum dilunasi. Harap bayar denda terlebih dahulu.');
         }
 
         $validated = $request->validate([
@@ -87,11 +87,9 @@ class BorrowingController extends Controller
             return back()->withErrors(['book_id' => 'Anda sudah meminjam atau memiliki permintaan aktif untuk buku ini.']);
         }
 
-        // Max 3 books at a time (including pending)
-        $activeBorrowings = $member->borrowings()
-            ->whereIn('status', ['dipinjam', 'menunggu_persetujuan'])
-            ->count();
-        if ($activeBorrowings >= 3) {
+        // 2. CEK LIMIT PINJAM (Misal: Max 3 buku sekaligus)
+        $activeBorrowCount = $member->borrowings()->whereIn('status', ['dipinjam', 'menunggu_persetujuan'])->count();
+        if ($activeBorrowCount >= 3) {
             return back()->withErrors(['error' => 'Anda sudah mencapai batas maksimal peminjaman (3 buku).']);
         }
 

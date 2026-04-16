@@ -13,7 +13,6 @@ interface UserData {
 interface MemberData {
     kelas: string | null;
     alamat: string | null;
-    telepon: string | null;
     tanggal_lahir: string | null;
     jenis_kelamin: string | null;
     foto_url: string | null;
@@ -28,7 +27,6 @@ const props = defineProps<{
 const form = useForm({
     kelas         : props.member?.kelas         ?? '',
     alamat        : props.member?.alamat        ?? '',
-    telepon       : props.member?.telepon       ?? '',
     tanggal_lahir : props.member?.tanggal_lahir ?? '',
     jenis_kelamin : props.member?.jenis_kelamin ?? '',
     foto          : null as File | null,
@@ -197,22 +195,7 @@ const submit = () => {
                             </div>
                         </div>
 
-                        <!-- Telepon -->
-                        <div>
-                            <label for="telepon" class="mb-1.5 flex items-center gap-1.5 text-sm font-semibold" style="color: #5C3D1E;">
-                                <Phone class="h-4 w-4" style="color: #C4781A;" />
-                                Nomor Telepon <span class="text-red-500">*</span>
-                            </label>
-                            <input
-                                id="telepon"
-                                v-model="form.telepon"
-                                type="text"
-                                placeholder="Contoh: 08123456789"
-                                class="w-full rounded-xl border-2 px-4 py-2.5 text-sm outline-none"
-                                style="border-color: #F0D6A8; color: #5C3D1E; background: #FFFBF5;"
-                            />
-                            <p v-if="form.errors.telepon" class="mt-1 text-xs text-red-600">{{ form.errors.telepon }}</p>
-                        </div>
+
 
                         <!-- Alamat -->
                         <div>
