@@ -67,10 +67,11 @@ class ReturnController extends Controller
         $borrowing->requestReturn();
 
         // Kirim notif WA ke siswa
-        $user = $member->user;
-        if ($user->phone) {
+        $phoneNumber = $member->telepon ?? $user->phone;
+        
+        if ($phoneNumber) {
             $fonnte = new FonnteService();
-            $fonnte->send($user->phone,
+            $fonnte->send($phoneNumber,
                 "Halo *{$user->name}*! 📚\n\n"
                 . "Permintaan pengembalian buku berhasil dikirim.\n"
                 . "Judul: *{$borrowing->book->judul}*\n\n"

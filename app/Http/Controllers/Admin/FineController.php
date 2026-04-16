@@ -26,7 +26,7 @@ class FineController extends Controller
                   });
             });
 
-        $status = $request->get('status');
+        $status = $request->input('status');
         if ($status === 'pending') {
             $query->where('payment_status', 'pending')->where('denda', '>', 0);
         } elseif ($status === 'paid') {
@@ -36,7 +36,7 @@ class FineController extends Controller
         }
 
         if ($request->has('search')) {
-            $search = $request->get('search');
+            $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->whereHas('member.user', function ($q2) use ($search) {
                     $q2->where('name', 'like', "%{$search}%");

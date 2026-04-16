@@ -8,6 +8,7 @@ use App\Services\FonnteService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -165,33 +166,37 @@ class BorrowApprovalController extends Controller
     public function approveReturn(Borrowing $borrowing): RedirectResponse
     {
         if ($borrowing->status !== 'menunggu_pengembalian') {
-            return back()->withErrors(['error' => 'Request pengembalian tidak valid.']);
+            return back()->withErrors(['error' => 'Peminjaman ini tidak sedang dalam status menunggu pengembalian.']);
         }
 
+        // 1. Proses pengembalian di database dulu agar tombol tidak macet
         $borrowing->returnBook();
-
         $message = 'Pengembalian buku berhasil disetujui.';
         if ($borrowing->denda > 0) {
             $message .= ' Denda keterlambatan: Rp ' . number_format($borrowing->denda, 0, ',', '.');
         }
 
-        // Kirim notif WA ke anggota
-        $borrowing->load('member.user', 'book');
-        $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;
+        // 2. Kirim notif WA (menggunakan try-catch agar jika WA error, proses di atas tidak batal)
+        try {
+            $borrowing->load('member.user', 'book');
+            $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;
 
-        if ($phoneNumber) {
-            $fonnte = new FonnteService();
-            $waMessage = "Halo *{$borrowing->member->user->name}*!\n\n"
-                . "Pengembalian buku telah dikonfirmasi oleh Admin.\n"
-                . "Judul: *{$borrowing->book->judul}*\n";
+            if ($phoneNumber) {
+                $fonnte = new FonnteService();
+                $waMessage = "Halo *{$borrowing->member->user->name}*!\n\n"
+                    . "Pengembalian buku telah dikonfirmasi oleh Admin.\n"
+                    . "Judul: *{$borrowing->book->judul}*\n";
 
-            if ($borrowing->denda > 0) {
-                $waMessage .= "Denda: *Rp " . number_format($borrowing->denda, 0, ',', '.') . "*\n"
-                    . "Harap segera lunasi denda di perpustakaan.\n";
+                if ($borrowing->denda > 0) {
+                    $waMessage .= "Denda: *Rp " . number_format($borrowing->denda, 0, ',', '.') . "*\n"
+                        . "Harap segera lunasi denda di perpustakaan.\n";
+                }
+
+                $waMessage .= "\nTerima kasih!";
+                $fonnte->send($phoneNumber, $waMessage);
             }
-
-            $waMessage .= "\nTerima kasih!";
-            $fonnte->send($phoneNumber, $waMessage);
+        } catch (\Exception $e) {
+            Log::warning('Notifikasi WA gagal saat approve return: ' . $e->getMessage());
         }
 
         return back()->with('success', $message);

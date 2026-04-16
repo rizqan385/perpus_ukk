@@ -219,12 +219,12 @@ class MemberController extends Controller
     {
         $query = Member::with('user')->where('status', 'aktif');
 
-        if ($request->get('kelas')) {
-            $query->where('kelas', 'like', '%' . $request->get('kelas') . '%');
+        if ($request->input('kelas')) {
+            $query->where('kelas', 'like', '%' . $request->input('kelas') . '%');
         }
 
-        if ($request->get('search')) {
-            $search = $request->get('search');
+        if ($request->input('search')) {
+            $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('no_anggota', 'like', "%{$search}%")
                     ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"));

@@ -15,7 +15,7 @@ class LandingController extends Controller
         $userId = auth()->id();
         $query  = Book::query();
 
-        if ($search = $request->get('search')) {
+        if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('judul', 'like', "%{$search}%")
                   ->orWhere('pengarang', 'like', "%{$search}%")
@@ -71,7 +71,7 @@ class LandingController extends Controller
         $userId = auth()->id();
         $query  = Book::query();
 
-        if ($search = $request->get('search')) {
+        if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('judul', 'like', "%{$search}%")
                   ->orWhere('pengarang', 'like', "%{$search}%")

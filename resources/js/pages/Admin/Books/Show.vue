@@ -58,7 +58,7 @@ const formatDate = (date: string) => {
 };
 
 const getCoverUrl = (path: string | null) => {
-    if (!path) return null;
+    if (!path) return undefined;
     return `/storage/${path}`;
 };
 

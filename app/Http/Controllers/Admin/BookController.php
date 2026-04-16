@@ -20,15 +20,15 @@ class BookController extends Controller
         $query = Book::query();
 
         // Date filter
-        if ($request->has('from_date') && $request->get('from_date')) {
-            $query->whereDate('created_at', '>=', $request->get('from_date'));
+        if ($request->has('from_date') && $request->input('from_date')) {
+            $query->whereDate('created_at', '>=', $request->input('from_date'));
         }
-        if ($request->has('to_date') && $request->get('to_date')) {
-            $query->whereDate('created_at', '<=', $request->get('to_date'));
+        if ($request->has('to_date') && $request->input('to_date')) {
+            $query->whereDate('created_at', '<=', $request->input('to_date'));
         }
 
         if ($request->has('search')) {
-            $search = $request->get('search');
+            $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('judul', 'like', "%{$search}%")
                     ->orWhere('pengarang', 'like', "%{$search}%")

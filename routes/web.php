@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BorrowApprovalController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -23,36 +22,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Services\FonnteService;
-
-// ─── DEBUG WA & CLEAR CACHE (Paling atas agar tidak 404) ────────
-Route::get('/test-wa', function() {
-    try {
-        Artisan::call('route:clear');
-        Artisan::call('config:clear');
-        Artisan::call('cache:clear');
-    } catch (\Exception $e) {}
-
-    $phone = request('phone');
-    $token = config('services.fonnte.token');
-    
-    if (!$phone) return "Berhasil Clear Cache! Gunakan parameter ?phone=nomorwa untuk tes WA.";
-    
-    // Manual Http call here to see RAW response for debugging
-    $response = Illuminate\Support\Facades\Http::withHeaders([
-        'Authorization' => $token,
-    ])->withOptions(['verify' => false])->post('https://api.fonnte.com/send', [
-        'target'  => $phone,
-        'message' => "Test Debug Manual - " . now(),
-    ]);
-    
-    return [
-        'info' => 'Cache telah dibersihkan otomatis',
-        'target' => $phone,
-        'http_status' => $response->status(),
-        'raw_response' => $response->json(),
-        'token_used' => $token ? substr($token, 0, 5) . '...' : 'NONE'
-    ];
-});
 
 // ─── Public Landing ───────────────────────────────────────────────
 Route::get('/', [LandingController::class, 'index'])->name('home');
