@@ -80,7 +80,8 @@ const payOnline = async (borrowing: Borrowing) => {
             alert(data.error || 'Gagal menyiapkan pembayaran.');
         }
     } catch (e) {
-        alert('Terjadi kesalahan koneksi ke server.');
+        console.error('Payment Error:', e);
+        alert('Gagal terhubung ke server. Pastikan Anda sudah login ulang atau refresh halaman.');
     }
 };
 </script>
