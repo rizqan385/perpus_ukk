@@ -127,7 +127,7 @@ class FineController extends Controller
         }
 
         $borrowing->load('member.user', 'book');
-        $phone = $borrowing->member->user->phone;
+        $phone = $borrowing->member->telepon ?? $borrowing->member->user->phone;
 
         if (!$phone) {
             return back()->withErrors(['error' => 'Siswa ini belum memiliki nomor WhatsApp terdaftar.']);

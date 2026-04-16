@@ -22,7 +22,7 @@ class MemberController extends Controller
         $query = Member::with('user');
 
         if ($request->filled('search')) {
-            $search = $request->get('search');
+            $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('no_anggota', 'like', "%{$search}%")
                     ->orWhere('kelas', 'like', "%{$search}%")
@@ -34,22 +34,22 @@ class MemberController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->get('status'));
+            $query->where('status', $request->input('status'));
         }
 
         // Filter members with fines
-        if ($request->get('has_fine') === 'yes') {
+        if ($request->input('has_fine') === 'yes') {
             $query->whereHas('borrowings', function ($q) {
                 $q->where('denda', '>', 0)->whereNull('payment_status');
             });
         }
 
         if ($request->filled('kelas')) {
-            $query->where('kelas', $request->get('kelas'));
+            $query->where('kelas', $request->input('kelas'));
         }
 
         if ($request->filled('jenis_kelamin')) {
-            $query->where('jenis_kelamin', $request->get('jenis_kelamin'));
+            $query->where('jenis_kelamin', $request->input('jenis_kelamin'));
         }
 
         $members = $query->latest()->paginate(10);

@@ -23,7 +23,7 @@ class TransactionController extends Controller
         $query = Borrowing::with(['member.user', 'book']);
 
         if ($request->filled('search')) {
-            $search = $request->get('search');
+            $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->whereHas('member.user', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
@@ -36,11 +36,11 @@ class TransactionController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->get('status'));
+            $query->where('status', $request->input('status'));
         }
 
         if ($request->filled('kelas')) {
-            $kelas = $request->get('kelas');
+            $kelas = $request->input('kelas');
             $query->whereHas('member', function ($q) use ($kelas) {
                 $q->where('kelas', $kelas);
             });
@@ -64,7 +64,7 @@ class TransactionController extends Controller
         $query = Borrowing::with(['member.user', 'book'])->latest();
 
         if ($request->filled('search')) {
-            $search = $request->get('search');
+            $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->whereHas('member.user', fn($q) => $q->where('name', 'like', "%{$search}%"))
                     ->orWhereHas('book', fn($q) => $q->where('judul', 'like', "%{$search}%"))
@@ -73,30 +73,30 @@ class TransactionController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->get('status'));
+            $query->where('status', $request->input('status'));
         }
 
         if ($request->filled('kelas')) {
-            $kelas = $request->get('kelas');
+            $kelas = $request->input('kelas');
             $query->whereHas('member', function ($q) use ($kelas) {
                 $q->where('kelas', $kelas);
             });
         }
 
         // Filter berdasarkan periode waktu
-        $filterType = $request->get('filter_type');
-        if ($filterType === 'daily' && $request->get('date')) {
-            $query->whereDate('tanggal_pinjam', $request->get('date'));
-        } elseif ($filterType === 'monthly' && $request->get('month')) {
-            [$year, $month] = explode('-', $request->get('month'));
+        $filterType = $request->input('filter_type');
+        if ($filterType === 'daily' && $request->input('date')) {
+            $query->whereDate('tanggal_pinjam', $request->input('date'));
+        } elseif ($filterType === 'monthly' && $request->input('month')) {
+            [$year, $month] = explode('-', $request->input('month'));
             $query->whereYear('tanggal_pinjam', $year)
                 ->whereMonth('tanggal_pinjam', $month);
-        } elseif ($filterType === 'yearly' && $request->get('year')) {
-            $query->whereYear('tanggal_pinjam', $request->get('year'));
+        } elseif ($filterType === 'yearly' && $request->input('year')) {
+            $query->whereYear('tanggal_pinjam', $request->input('year'));
         }
 
         $data = $query->get();
-        $format = $request->get('format', 'csv');
+        $format = $request->input('format', 'csv');
 
         if ($format === 'csv') {
             $filename = 'laporan-transaksi-' . now()->format('Y-m-d') . '.csv';
@@ -132,12 +132,12 @@ class TransactionController extends Controller
 
         // PDF: render Inertia print page
         $filterLabel = 'Semua Periode';
-        if ($filterType === 'daily' && $request->get('date')) {
-            $filterLabel = 'Harian: ' . Carbon::parse($request->get('date'))->translatedFormat('d F Y');
-        } elseif ($filterType === 'monthly' && $request->get('month')) {
-            $filterLabel = 'Bulanan: ' . Carbon::parse($request->get('month') . '-01')->translatedFormat('F Y');
-        } elseif ($filterType === 'yearly' && $request->get('year')) {
-            $filterLabel = 'Tahunan: ' . $request->get('year');
+        if ($filterType === 'daily' && $request->input('date')) {
+            $filterLabel = 'Harian: ' . Carbon::parse($request->input('date'))->translatedFormat('d F Y');
+        } elseif ($filterType === 'monthly' && $request->input('month')) {
+            $filterLabel = 'Bulanan: ' . Carbon::parse($request->input('month') . '-01')->translatedFormat('F Y');
+        } elseif ($filterType === 'yearly' && $request->input('year')) {
+            $filterLabel = 'Tahunan: ' . $request->input('year');
         }
 
         return Inertia::render('Admin/Transactions/ExportPdf', [
@@ -206,16 +206,19 @@ class TransactionController extends Controller
 
         // Kirim notif WA ke anggota
         $member->load('user');
-        $fonnte = new FonnteService();
-        $fonnte->send(
-            $member->user->phone,
-            "Halo *{$member->user->name}*! 📚\n\n"
-            . "Peminjaman buku berhasil.\n"
-            . "Judul: *{$book->judul}*\n"
-            . "Tgl pinjam: " . Carbon::parse($validated['tanggal_pinjam'])->format('d/m/Y') . "\n"
-            . "Batas kembali: " . Carbon::parse($validated['tanggal_kembali'])->format('d/m/Y') . "\n\n"
-            . "Kembalikan tepat waktu ya. Terima kasih!"
-        );
+        $phoneNumber = $member->telepon ?? $member->user->phone;
+
+        if ($phoneNumber) {
+            $fonnte = new FonnteService();
+            $fonnte->send($phoneNumber,
+                "Halo *{$member->user->name}*! 📚\n\n"
+                . "Peminjaman buku berhasil.\n"
+                . "Judul: *{$book->judul}*\n"
+                . "Tgl pinjam: " . Carbon::parse($validated['tanggal_pinjam'])->format('d/m/Y') . "\n"
+                . "Batas kembali: " . Carbon::parse($validated['tanggal_kembali'])->format('d/m/Y') . "\n\n"
+                . "Kembalikan tepat waktu ya. Terima kasih!"
+            );
+        }
 
         return redirect()->route('admin.transactions.index')
             ->with('success', 'Transaksi peminjaman berhasil dibuat.');
@@ -270,18 +273,22 @@ if ($transaction->denda > 0) {
 
 // Kirim notif WA ke anggota
 $transaction->load('member.user', 'book');
-$fonnte = new FonnteService();
-$waMessage = "Halo *{$transaction->member->user->name}*!\n\n"
-    . "Pengembalian buku telah dikonfirmasi.\n"
-    . "Judul: *{$transaction->book->judul}*\n";
+$phoneNumber = $transaction->member->telepon ?? $transaction->member->user->phone;
 
-if ($transaction->denda > 0) {
-    $waMessage .= "Denda: *Rp " . number_format($transaction->denda, 0, ',', '.') . "*\n"
-        . "Harap segera lunasi denda di perpustakaan.\n";
+if ($phoneNumber) {
+    $fonnte = new FonnteService();
+    $waMessage = "Halo *{$transaction->member->user->name}*!\n\n"
+        . "Pengembalian buku telah dikonfirmasi.\n"
+        . "Judul: *{$transaction->book->judul}*\n";
+
+    if ($transaction->denda > 0) {
+        $waMessage .= "Denda: *Rp " . number_format($transaction->denda, 0, ',', '.') . "*\n"
+            . "Harap segera lunasi denda di perpustakaan.\n";
+    }
+
+    $waMessage .= "\nTerima kasih!";
+    $fonnte->send($phoneNumber, $waMessage);
 }
-
-$waMessage .= "\nTerima kasih!";
-$fonnte->send($transaction->member->user->phone, $waMessage);
 
 return redirect()->route('admin.transactions.index')
     ->with('success', $message);

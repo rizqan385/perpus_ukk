@@ -18,7 +18,7 @@ class BorrowApprovalController extends Controller
      */
     public function index(Request $request): Response
     {
-        $search = $request->get('search');
+        $search = $request->input('search');
 
         // ── Pending borrow requests ─────────────────────────────────────
         $borrowQuery = Borrowing::with(['member.user', 'book'])
@@ -115,9 +115,11 @@ class BorrowApprovalController extends Controller
         
         // Kirim notif WA ke anggota
         $borrowing->load('member.user');
-        if ($borrowing->member->user->phone) {
+        $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;
+
+        if ($phoneNumber) {
             $fonnte = new FonnteService();
-            $fonnte->send($borrowing->member->user->phone,
+            $fonnte->send($phoneNumber,
                 "Halo *{$borrowing->member->user->name}*! 📚\n\n"
                 . "Permintaan pinjam buku disetujui.\n"
                 . "Judul: *{$borrowing->book->judul}*\n"
@@ -142,9 +144,11 @@ class BorrowApprovalController extends Controller
         $borrowing->delete();
         
         // Kirim notif WA ke anggota
-        if ($borrowing->member->user->phone) {
+        $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;
+        
+        if ($phoneNumber) {
             $fonnte = new FonnteService();
-            $fonnte->send($borrowing->member->user->phone,
+            $fonnte->send($phoneNumber,
                 "Halo *{$memberName}*! 📚\n\n"
                 . "Mohon maaf, permintaan pinjam buku ditolak.\n"
                 . "Judul: *{$bookTitle}*\n\n"
@@ -173,7 +177,9 @@ class BorrowApprovalController extends Controller
 
         // Kirim notif WA ke anggota
         $borrowing->load('member.user', 'book');
-        if ($borrowing->member->user->phone) {
+        $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;
+
+        if ($phoneNumber) {
             $fonnte = new FonnteService();
             $waMessage = "Halo *{$borrowing->member->user->name}*!\n\n"
                 . "Pengembalian buku telah dikonfirmasi oleh Admin.\n"
@@ -185,7 +191,7 @@ class BorrowApprovalController extends Controller
             }
 
             $waMessage .= "\nTerima kasih!";
-            $fonnte->send($borrowing->member->user->phone, $waMessage);
+            $fonnte->send($phoneNumber, $waMessage);
         }
 
         return back()->with('success', $message);
