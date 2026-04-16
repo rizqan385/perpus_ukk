@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, BookOpen, Calendar, Hash, User, Building, FileText, Package } from 'lucide-vue-next';
+import { ArrowLeft, BookOpen, Calendar, Hash, User, Building, FileText, Package, Edit } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 interface User {
@@ -90,7 +90,8 @@ const borrowingHistory = props.book.borrowings?.filter(b => b.status !== 'dipinj
                         :href="`/admin/books/${book.id}/edit`"
                         class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
                     >
-                        ✏️ Edit
+                        <Edit class="h-4 w-4" />
+                        Edit
                     </Link>
                 </div>
             </div>

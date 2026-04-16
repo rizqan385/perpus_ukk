@@ -208,7 +208,8 @@ const breadcrumbs = [
 
             <!-- Filter Periode Laporan PDF -->
             <div class="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-red-300 bg-red-50 px-4 py-3 dark:border-red-700 dark:bg-red-900/10">
-                <span class="text-sm font-semibold text-red-700 dark:text-red-400">🖨️ Filter Periode PDF:</span>
+                <Printer class="h-4 w-4 text-red-600" />
+                <span class="text-sm font-semibold text-red-700 dark:text-red-400">Filter Periode PDF:</span>
                 <select
                     v-model="filterType"
                     class="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-800 dark:border-red-700 dark:text-white"

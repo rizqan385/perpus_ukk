@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { BookOpen, Calendar, Search, X } from 'lucide-vue-next';
+import { BookOpen, Calendar, Search, X, Eye, Edit, Trash2 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, watch } from 'vue';
 
@@ -201,21 +201,21 @@ const breadcrumbs = [
                                         class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700"
                                         title="Lihat"
                                     >
-                                        👁️
+                                        <Eye class="h-4 w-4" />
                                     </a>
                                     <a
                                         :href="`/admin/books/${book.id}/edit`"
                                         class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-700"
                                         title="Edit"
                                     >
-                                        ✏️
+                                        <Edit class="h-4 w-4" />
                                     </a>
                                     <button
                                         @click="deleteBook(book)"
                                         class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700"
                                         title="Hapus"
                                     >
-                                        🗑️
+                                        <Trash2 class="h-4 w-4" />
                                     </button>
                                 </div>
                             </td>
