@@ -22,7 +22,7 @@ class CardController extends Controller
 
         $member->load('user');
 
-        return Inertia::render('Siswa/Card', [
+        return Inertia::render('Siswa/MemberCard', [
             'member' => $member,
         ]);
     }

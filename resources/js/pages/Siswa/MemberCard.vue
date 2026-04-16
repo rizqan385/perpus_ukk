@@ -2,7 +2,6 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { Download, ArrowLeft, IdCard } from 'lucide-vue-next';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
-import jsPDF from 'jspdf';
 
 interface Member {
     id: number;
@@ -27,6 +26,7 @@ const formatDate = (d: string | null) => {
 
 // ── jsPDF Download ──────────────────────────────────────────────────
 const downloadPDF = async () => {
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
