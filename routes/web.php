@@ -128,3 +128,28 @@ Route::prefix('siswa')
 Route::post('/payment/midtrans/notification', [\App\Http\Controllers\Siswa\PaymentController::class, 'handleNotification'])->name('payment.notification');
 
 require __DIR__.'/settings.php';
+
+// ─── Route Rahasia Demo Denda (Hanya untuk testing Railway) ────────
+Route::get('/tanam-denda-rahasia-ukom-2024', function () {
+    $user = \App\Models\User::where('role', 'siswa')->first();
+    
+    if (!$user || !$user->member) {
+        return "Gagal: User siswa belum ada atau belum daftar member.";
+    }
+
+    $book = \App\Models\Book::first();
+    if (!$book) return "Gagal: Belum ada data buku.";
+
+    \App\Models\Borrowing::create([
+        'member_id' => $user->member->id,
+        'book_id' => $book->id,
+        'tanggal_pinjam' => now()->subDays(20),
+        'tanggal_kembali' => now()->subDays(10),
+        'tanggal_dikembalikan' => now()->subDays(2),
+        'status' => 'dikembalikan',
+        'denda' => 50000,
+        'payment_status' => null
+    ]);
+
+    return "MANTAP! Denda Rp 50.000 berhasil ditanam di akun: " . $user->name . ". Silakan login dan cek menu denda.";
+});
