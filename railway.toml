@@ -8,4 +8,4 @@ startCommand = "/start-container.sh"
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "php artisan migrate --force && /start-container.sh"
+startCommand = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"
