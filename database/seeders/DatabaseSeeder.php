@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create Admin Account
-        User::create([
+        User::firstorcreate([
             'name' => 'Administrator',
             'email' => 'admin@perpus.com',
             'password' => Hash::make('password123'),
@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Create Sample Siswa Account (with membership)
-        $siswa = User::create([
+        $siswa = User::firstorcreate([
             'name' => 'Siswa Demo',
             'email' => 'siswa@perpus.com',
             'password' => Hash::make('password123'),

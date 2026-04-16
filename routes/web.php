@@ -17,6 +17,7 @@ use App\Http\Controllers\Siswa\FineController as SiswaFineController;
 use App\Http\Controllers\Siswa\MemberRegistrationController;
 use App\Http\Controllers\Siswa\ReturnController;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SiswaAuthMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -92,7 +93,7 @@ Route::prefix('admin')
 
 // ─── Siswa (Student) Routes ───────────────────────────────────────
 Route::prefix('siswa')
-    ->middleware(['auth', 'verified', RoleMiddleware::class . ':siswa'])
+    ->middleware([SiswaAuthMiddleware::class])
     ->name('siswa.')
     ->group(function () {
         Route::get('/', [SiswaDashboardController::class, 'index'])->name('dashboard');

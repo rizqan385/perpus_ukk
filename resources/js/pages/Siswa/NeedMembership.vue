@@ -1,44 +1,43 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { UserPlus, AlertCircle } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
-
-const breadcrumbs = [
-    { title: 'Dashboard Siswa', href: '/siswa' },
-];
+import { UserPlus, AlertCircle, ArrowLeft } from 'lucide-vue-next';
+import SiswaLayout from '@/layouts/SiswaLayout.vue';
 </script>
 
 <template>
     <Head title="Perlu Keanggotaan" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 items-center justify-center p-6">
+    <SiswaLayout>
+        <div class="flex flex-1 items-center justify-center p-6 py-20">
             <div class="max-w-md text-center">
-                <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500">
+                <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-orange-500/20">
                     <AlertCircle class="h-10 w-10 text-white" />
                 </div>
-                <h1 class="mb-3 text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 class="mb-3 text-3xl font-bold" style="color: #5C3D1E; font-family: Georgia, serif;">
                     Pendaftaran Diperlukan
                 </h1>
-                <p class="mb-6 text-gray-600 dark:text-gray-400">
+                <p class="mb-8 text-lg" style="color: #7A5230;">
                     Untuk menggunakan fitur ini, Anda harus terdaftar sebagai anggota perpustakaan terlebih dahulu.
                 </p>
-                <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                <div class="flex flex-col gap-4 sm:flex-row sm:justify-center">
                     <Link
                         href="/siswa/register"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-3 font-semibold text-white transition-all hover:from-blue-600 hover:to-indigo-700"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 font-bold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                        style="background: linear-gradient(135deg, #E8A020, #C4781A);"
                     >
                         <UserPlus class="h-5 w-5" />
-                        Daftar Sekarang
+                        Daftar Sebagai Anggota
                     </Link>
                     <Link
                         href="/siswa"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border-2 px-8 py-3.5 font-bold transition-colors hover:bg-orange-50"
+                        style="border-color: #E8A020; color: #5C3D1E;"
                     >
+                        <ArrowLeft class="h-5 w-5" />
                         Kembali
                     </Link>
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </SiswaLayout>
 </template>
