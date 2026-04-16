@@ -15,32 +15,37 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Admin Account
-        User::firstorcreate([
-            'name' => 'Administrator',
-            'email' => 'admin@perpus.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-            'email_verified_at' => now(),
-        ]);
+        User::firstOrCreate(
+    ['email' => 'admin@perpus.com'],
+    [
+        'name' => 'Administrator',
+        'password' => Hash::make('password123'),
+        'role' => 'admin',
+        'email_verified_at' => now(),
+    ]
+);
 
-        // Create Sample Siswa Account (with membership)
-        $siswa = User::firstorcreate([
-            'name' => 'Siswa Demo',
-            'email' => 'siswa@perpus.com',
-            'password' => Hash::make('password123'),
-            'role' => 'siswa',
-            'email_verified_at' => now(),
-        ]);
+$siswa = User::firstOrCreate(
+    ['email' => 'siswa@perpus.com'],
+    [
+        'name' => 'Siswa Demo',
+        'password' => Hash::make('password123'),
+        'role' => 'siswa',
+        'email_verified_at' => now(),
+    ]
+);
 
-        Member::create([
-            'user_id' => $siswa->id,
-            'no_anggota' => Member::generateMemberNumber(),
-            'kelas' => 'XII RPL 1',
-            'alamat' => 'Jl. Contoh No. 123',
-            'telepon' => '08123456789',
-            'status' => 'aktif',
-        ]);
+Member::firstOrCreate(
+    ['user_id' => $siswa->id],
+    [
+        'no_anggota' => Member::generateMemberNumber(),
+        'kelas' => 'XII RPL 1',
+        'alamat' => 'Jl. Contoh No. 123',
+        'telepon' => '08123456789',
+        'status' => 'aktif',
+    ]
+
+        );
 
         // Create Sample Books
         $books = [
@@ -92,7 +97,8 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($books as $book) {
-            Book::create($book);
+            Book::firstOrCreate
+            ($book);
         }
     }
 }
