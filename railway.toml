@@ -3,3 +3,9 @@ builder = "NIXPACKS"
 
 [deploy]
 startCommand = "/start-container.sh"
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "php artisan migrate --force && /start-container.sh"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { BookOpen, Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
+import { BookOpen, Mail, Lock, Eye, EyeOff, BookMarked, Search, Bell } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 defineProps<{ status?: string; canResetPassword: boolean }>();
@@ -24,53 +24,78 @@ const submit = () => {
     <Head title="Masuk — E-Perpustakaan" />
 
     <div class="flex min-h-screen" style="font-family: Georgia, serif;">
-        <!-- ── LEFT PANEL: Orange warm illustration ── -->
-        <div class="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex lg:w-1/2" style="background: linear-gradient(160deg, #5C3D1E 0%, #3D2810 60%, #1E1408 100%);">
-            <!-- Decorative circles -->
+        <!-- ── LEFT PANEL ── -->
+        <div class="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex lg:w-1/2"
+             style="background: linear-gradient(160deg, #5C3D1E 0%, #3D2810 55%, #1E1408 100%);">
+
+            <!-- Animated background blobs -->
             <div class="pointer-events-none absolute inset-0">
-                <div class="absolute -right-20 top-20 h-96 w-96 rounded-full opacity-10" style="background: #E8A020;"></div>
-                <div class="absolute -left-10 bottom-20 h-64 w-64 rounded-full opacity-10" style="background: #C4781A;"></div>
-                <!-- Leaves decoration -->
-                <svg class="absolute right-10 top-1/3 opacity-20" width="200" height="140" viewBox="0 0 200 140">
-                    <ellipse cx="100" cy="70" rx="90" ry="58" fill="#E8A020" transform="rotate(-25 100 70)"/>
-                    <ellipse cx="60" cy="100" rx="65" ry="40" fill="#C4781A" transform="rotate(15 60 100)"/>
-                    <ellipse cx="150" cy="30" rx="50" ry="30" fill="#D4881A" transform="rotate(-40 150 30)"/>
+                <div class="siswa-blob-1 absolute -right-24 -top-24 h-96 w-96 rounded-full" style="background: radial-gradient(circle, #E8A020 0%, transparent 70%); opacity: 0.12;"></div>
+                <div class="siswa-blob-2 absolute -left-16 bottom-10 h-80 w-80 rounded-full" style="background: radial-gradient(circle, #C4781A 0%, transparent 70%); opacity: 0.12;"></div>
+                <div class="siswa-blob-3 absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full" style="background: radial-gradient(circle, #E8A020 0%, transparent 70%); opacity: 0.06;"></div>
+
+                <!-- Decorative grid dots -->
+                <svg class="absolute inset-0 h-full w-full opacity-5" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+                            <circle cx="2" cy="2" r="1.5" fill="#E8A020"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#dots)"/>
                 </svg>
-                <!-- Book illustration -->
-                <div class="absolute bottom-32 right-12 opacity-20" style="width:140px; height:180px; background: linear-gradient(135deg,#E8A020,#8B5E15); border-radius: 8px 16px 16px 8px; transform: rotate(8deg);"></div>
-                <div class="absolute bottom-40 right-20 opacity-30" style="width:120px; height:160px; background: linear-gradient(135deg,#C4781A,#5C3D1E); border-radius: 8px 16px 16px 8px; transform: rotate(-4deg);"></div>
+
+                <!-- Floating book shapes -->
+                <div class="siswa-book-float-1 absolute" style="bottom: 130px; right: 40px;">
+                    <div style="width:90px; height:120px; background: linear-gradient(135deg,#E8A020 0%,#8B5E15 100%); border-radius: 4px 12px 12px 4px; box-shadow: 4px 4px 20px rgba(0,0,0,0.4); position:relative; overflow:hidden;">
+                        <div style="position:absolute; left:8px; top:0; bottom:0; width:6px; background: rgba(0,0,0,0.2); border-radius:2px;"></div>
+                        <div style="position:absolute; top:20px; left:18px; right:8px; height:3px; background: rgba(255,255,255,0.3); border-radius:2px;"></div>
+                        <div style="position:absolute; top:30px; left:18px; right:16px; height:3px; background: rgba(255,255,255,0.2); border-radius:2px;"></div>
+                        <div style="position:absolute; top:40px; left:18px; right:20px; height:3px; background: rgba(255,255,255,0.15); border-radius:2px;"></div>
+                    </div>
+                </div>
+                <div class="siswa-book-float-2 absolute" style="bottom: 110px; right: 100px; transform: rotate(-12deg);">
+                    <div style="width:70px; height:100px; background: linear-gradient(135deg,#C4781A 0%,#5C3D1E 100%); border-radius: 4px 10px 10px 4px; box-shadow: 4px 4px 16px rgba(0,0,0,0.35); position:relative; overflow:hidden;">
+                        <div style="position:absolute; left:6px; top:0; bottom:0; width:5px; background: rgba(0,0,0,0.2); border-radius:2px;"></div>
+                        <div style="position:absolute; top:18px; left:15px; right:6px; height:2px; background: rgba(255,255,255,0.25); border-radius:2px;"></div>
+                        <div style="position:absolute; top:26px; left:15px; right:10px; height:2px; background: rgba(255,255,255,0.15); border-radius:2px;"></div>
+                    </div>
+                </div>
+                <div class="siswa-book-float-3 absolute" style="bottom: 150px; right: 155px; transform: rotate(6deg);">
+                    <div style="width:55px; height:80px; background: linear-gradient(135deg,#D4881A 0%,#7A4A10 100%); border-radius: 4px 8px 8px 4px; box-shadow: 3px 3px 12px rgba(0,0,0,0.3); position:relative; overflow:hidden;">
+                        <div style="position:absolute; left:5px; top:0; bottom:0; width:4px; background: rgba(0,0,0,0.2); border-radius:2px;"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Logo top -->
             <div class="relative flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: linear-gradient(135deg, #E8A020, #C4781A);">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: linear-gradient(135deg, #E8A020, #C4781A); box-shadow: 0 4px 14px rgba(232,160,32,0.4);">
                     <BookOpen class="h-6 w-6 text-white" />
                 </div>
-                <span class="text-2xl font-bold text-white">E-Perpustakaan</span>
+                <div>
+                    <span class="text-xl font-bold text-white">E-Perpustakaan</span>
+                    <p class="text-xs opacity-50 text-white">Portal Siswa</p>
+                </div>
             </div>
 
-            <!-- Center quote -->
+            <!-- Center content -->
+            <div class="relative space-y-8">
+                <!-- Quote -->
+                <div>
+                    <div style="width: 36px; height: 3px; background: linear-gradient(90deg,#E8A020,#C4781A); border-radius: 2px; margin-bottom: 20px;"></div>
+                    <p class="text-3xl font-bold leading-snug text-white">
+                        Membaca adalah jendela<br/>menuju dunia yang<br/>tak terbatas.
+                    </p>
+                    <p class="mt-4 text-sm opacity-50 text-white italic">— Bergabung dengan ribuan pembaca aktif</p>
+                </div>
+
+            </div>
+
+            <!-- Bottom badge -->
             <div class="relative">
-                <p class="mb-4 text-5xl font-bold leading-tight text-white">"</p>
-                <p class="text-2xl font-semibold leading-relaxed text-white">
-                    Membaca adalah jendela<br/>menuju dunia yang<br/>tak terbatas.
-                </p>
-                <p class="mt-6 text-sm opacity-60 text-white">— Bergabung dengan ribuan pembaca aktif</p>
-            </div>
-
-            <!-- Stats bottom -->
-            <div class="relative grid grid-cols-3 gap-4">
-                <div class="text-center">
-                    <p class="text-2xl font-bold" style="color: #E8A020;">500+</p>
-                    <p class="text-xs text-white opacity-60">Koleksi Buku</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-2xl font-bold" style="color: #E8A020;">1.2K</p>
-                    <p class="text-xs text-white opacity-60">Anggota</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-2xl font-bold" style="color: #E8A020;">FREE</p>
-                    <p class="text-xs text-white opacity-60">Untuk Semua</p>
+                <div class="inline-flex items-center gap-2 rounded-full px-4 py-2" style="background: rgba(232,160,32,0.15); border: 1px solid rgba(232,160,32,0.3);">
+                    <div class="h-2 w-2 rounded-full" style="background: #E8A020; box-shadow: 0 0 6px #E8A020;"></div>
+                    <span class="text-xs text-white opacity-70">Sistem aktif & siap digunakan</span>
                 </div>
             </div>
         </div>
@@ -167,3 +192,29 @@ const submit = () => {
         </div>
     </div>
 </template>
+
+<style scoped>
+@keyframes blobFloat {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-18px) scale(1.04); }
+}
+@keyframes bookFloat1 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(2deg); }
+}
+@keyframes bookFloat2 {
+    0%, 100% { transform: rotate(-12deg) translateY(0px); }
+    50% { transform: rotate(-10deg) translateY(-8px); }
+}
+@keyframes bookFloat3 {
+    0%, 100% { transform: rotate(6deg) translateY(0px); }
+    50% { transform: rotate(8deg) translateY(-10px); }
+}
+
+.siswa-blob-1 { animation: blobFloat 7s ease-in-out infinite; }
+.siswa-blob-2 { animation: blobFloat 9s ease-in-out infinite 1s; }
+.siswa-blob-3 { animation: blobFloat 11s ease-in-out infinite 2s; }
+.siswa-book-float-1 { animation: bookFloat1 5s ease-in-out infinite; }
+.siswa-book-float-2 { animation: bookFloat2 6s ease-in-out infinite 0.5s; }
+.siswa-book-float-3 { animation: bookFloat3 7s ease-in-out infinite 1s; }
+</style>
