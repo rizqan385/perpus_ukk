@@ -1,7 +1,2 @@
 [variables]
-PHP_VERSION = "8.3"
-
-[phases.extensions]
-cmds = [
-  "apt-get update && apt-get install -y libpng-dev libzip-dev && docker-php-ext-install gd zip"
-]
+NIXPACKS_PHP_VERSION = "8.3"
