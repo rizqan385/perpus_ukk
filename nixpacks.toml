@@ -3,5 +3,5 @@ PHP_VERSION = "8.3"
 
 [phases.extensions]
 cmds = [
-  "apt-get install -y libpng-dev libzip-dev && docker-php-ext-install gd zip"
+  "apt-get update && apt-get install -y libpng-dev libzip-dev && docker-php-ext-install gd zip"
 ]
