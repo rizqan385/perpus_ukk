@@ -37,14 +37,20 @@ Route::get('/test-wa', function() {
     
     if (!$phone) return "Berhasil Clear Cache! Gunakan parameter ?phone=nomorwa untuk tes WA.";
     
-    $fonnte = new FonnteService();
-    $result = $fonnte->send($phone, "Test Langsung dari Root - " . now());
+    // Manual Http call here to see RAW response for debugging
+    $response = Illuminate\Support\Facades\Http::withHeaders([
+        'Authorization' => $token,
+    ])->withOptions(['verify' => false])->post('https://api.fonnte.com/send', [
+        'target'  => $phone,
+        'message' => "Test Debug Manual - " . now(),
+    ]);
     
     return [
         'info' => 'Cache telah dibersihkan otomatis',
         'target' => $phone,
-        'token_configured' => $token ? 'Yes (Starts with: ' . substr($token, 0, 5) . '...)' : 'No',
-        'status' => $result ? 'Success' : 'Failed',
+        'http_status' => $response->status(),
+        'raw_response' => $response->json(),
+        'token_used' => $token ? substr($token, 0, 5) . '...' : 'NONE'
     ];
 });
 
