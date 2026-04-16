@@ -57,7 +57,7 @@ class BorrowingController extends Controller
         $member = $user->member;
 
         if (!$member || !$member->isActive()) {
-            return redirect('/siswa/register?incomplete=1')
+            return redirect()->route('siswa.register')
                 ->with('info', 'Lengkapi data diri terlebih dahulu untuk meminjam buku.');
         }
 
@@ -118,6 +118,7 @@ class BorrowingController extends Controller
             );
         }
 
-        return back()->with('success', 'Permintaan pinjam buku "' . $book->judul . '" berhasil dikirim. Menunggu konfirmasi admin.');
+        return redirect()->route('siswa.card')
+            ->with('success', 'Permintaan pinjam buku "' . $book->judul . '" berhasil dikirim. Menunggu konfirmasi admin.');
     }
 }

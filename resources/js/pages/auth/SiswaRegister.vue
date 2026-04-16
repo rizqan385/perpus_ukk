@@ -82,7 +82,7 @@ const submit = () => {
                                 type="text"
                                 placeholder="Nama kamu"
                                 class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:shadow-md"
-                                :style="form.errors.name ? 'border-color:#EF4444' : 'border-color:#E8A020'"
+                                :style="(form.errors.name ? 'border-color:#EF4444' : 'border-color:#E8A020') + ';color:#1a1a1a;'"
                             />
                         </div>
                         <p v-if="form.errors.name" class="mt-1 text-xs text-red-500">{{ form.errors.name }}</p>
@@ -97,7 +97,7 @@ const submit = () => {
                                 type="email"
                                 placeholder="email@sekolah.ac.id"
                                 class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:shadow-md"
-                                :style="form.errors.email ? 'border-color:#EF4444' : 'border-color:#E8A020'"
+                                :style="(form.errors.email ? 'border-color:#EF4444' : 'border-color:#E8A020') + ';color:#1a1a1a;'"
                             />
                         </div>
                         <p v-if="form.errors.email" class="mt-1 text-xs text-red-500">{{ form.errors.email }}</p>
@@ -112,7 +112,7 @@ const submit = () => {
                                 type="text"
                                 placeholder="08xxxxxxxxx"
                                 class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:shadow-md"
-                                :style="form.errors.phone ? 'border-color:#EF4444' : 'border-color:#E8A020'"
+                                :style="(form.errors.phone ? 'border-color:#EF4444' : 'border-color:#E8A020') + ';color:#1a1a1a;'"
                             />
                         </div>
                         <p v-if="form.errors.phone" class="mt-1 text-xs text-red-500">{{ form.errors.phone }}</p>
@@ -127,7 +127,7 @@ const submit = () => {
                                 :type="showPassword ? 'text' : 'password'"
                                 placeholder="Min. 8 karakter"
                                 class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-12 text-sm outline-none focus:shadow-md"
-                                :style="form.errors.password ? 'border-color:#EF4444' : 'border-color:#E8A020'"
+                                :style="(form.errors.password ? 'border-color:#EF4444' : 'border-color:#E8A020') + ';color:#1a1a1a;'"
                             />
                             <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2" style="color: #C4781A;">
                                 <Eye v-if="!showPassword" class="h-4 w-4" />
@@ -146,7 +146,7 @@ const submit = () => {
                                 :type="showPassword ? 'text' : 'password'"
                                 placeholder="Ulangi password"
                                 class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:shadow-md"
-                                style="border-color: #E8A020;"
+                                style="border-color: #E8A020; color:#1a1a1a;"
                             />
                         </div>
                     </div>

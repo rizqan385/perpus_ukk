@@ -89,6 +89,39 @@ const submit = () => {
                     <p class="mt-4 text-sm opacity-50 text-white italic">— Bergabung dengan ribuan pembaca aktif</p>
                 </div>
 
+                <!-- Feature cards -->
+                <div class="space-y-3">
+                    <!-- Card 1 -->
+                    <div class="flex items-center gap-4 rounded-2xl p-4" style="background: rgba(255,255,255,0.07); backdrop-filter: blur(8px); border: 1px solid rgba(232,160,32,0.2);">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style="background: rgba(232,160,32,0.2);">
+                            <BookMarked class="h-5 w-5" style="color: #E8A020;" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Koleksi Lengkap</p>
+                            <p class="text-xs opacity-50 text-white">Akses ribuan buku dari berbagai kategori</p>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="flex items-center gap-4 rounded-2xl p-4" style="background: rgba(255,255,255,0.07); backdrop-filter: blur(8px); border: 1px solid rgba(232,160,32,0.2);">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style="background: rgba(232,160,32,0.2);">
+                            <Search class="h-5 w-5" style="color: #E8A020;" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Cari & Pinjam Mudah</p>
+                            <p class="text-xs opacity-50 text-white">Temukan dan ajukan peminjaman online</p>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="flex items-center gap-4 rounded-2xl p-4" style="background: rgba(255,255,255,0.07); backdrop-filter: blur(8px); border: 1px solid rgba(232,160,32,0.2);">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style="background: rgba(232,160,32,0.2);">
+                            <Bell class="h-5 w-5" style="color: #E8A020;" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Notifikasi Otomatis</p>
+                            <p class="text-xs opacity-50 text-white">Pengingat jatuh tempo via WhatsApp</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Bottom badge -->
@@ -131,7 +164,7 @@ const submit = () => {
                                 autocomplete="email"
                                 placeholder="email@sekolah.ac.id"
                                 class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-4 text-sm outline-none transition-all focus:shadow-md"
-                                :style="form.errors.email ? 'border-color:#EF4444' : 'border-color:#E8A020'"
+                                :style="(form.errors.email ? 'border-color:#EF4444' : 'border-color:#E8A020') + ';color:#1a1a1a;'"
                             />
                         </div>
                         <p v-if="form.errors.email" class="mt-1 text-xs text-red-500">{{ form.errors.email }}</p>
@@ -149,7 +182,7 @@ const submit = () => {
                                 autocomplete="current-password"
                                 placeholder="••••••••"
                                 class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-12 text-sm outline-none transition-all focus:shadow-md"
-                                :style="form.errors.password ? 'border-color:#EF4444' : 'border-color:#E8A020'"
+                                :style="(form.errors.password ? 'border-color:#EF4444' : 'border-color:#E8A020') + ';color:#1a1a1a;'"
                             />
                             <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2" style="color: #C4781A;">
                                 <Eye v-if="!showPassword" class="h-4 w-4" />
