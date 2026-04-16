@@ -3,7 +3,6 @@ builder = "NIXPACKS"
 
 [deploy]
 startCommand = "/start-container.sh"
-
 [build]
 builder = "NIXPACKS"
 
