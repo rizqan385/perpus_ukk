@@ -203,49 +203,6 @@ const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
                     </div>
                 </div>
             </div>
-
-            <!-- ══ RETURN HISTORY ══ -->
-            <div v-if="returnHistory.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #D1D5DB;">
-                <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #F9FAFB; border-color: #E5E7EB;">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
-                        <CheckCircle class="h-5 w-5 text-gray-500" />
-                    </div>
-                    <h2 class="font-bold" style="color: #5C3D1E;">Riwayat Pengembalian</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead style="background: #F9FAFB;">
-                            <tr>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Buku</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Tgl Pinjam</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Tgl Kembali</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Status</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style="color: #9A7050;">Denda</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y" style="border-color: #F3F4F6;">
-                            <tr v-for="item in returnHistory" :key="item.id" class="hover:bg-orange-50 transition">
-                                <td class="px-5 py-4">
-                                    <p class="font-semibold text-sm" style="color: #5C3D1E;">{{ item.book.judul }}</p>
-                                    <p class="text-xs" style="color: #9A7050;">{{ item.book.pengarang }}</p>
-                                </td>
-                                <td class="px-5 py-4 text-sm" style="color: #5C3D1E;">{{ formatDate(item.tanggal_pinjam) }}</td>
-                                <td class="px-5 py-4 text-sm" style="color: #5C3D1E;">{{ formatDate(item.tanggal_dikembalikan || item.tanggal_kembali) }}</td>
-                                <td class="px-5 py-4">
-                                    <span class="rounded-full px-3 py-1 text-xs font-bold"
-                                        :style="item.status === 'dikembalikan' ? 'background:#DCFCE7; color:#166534' : 'background:#FEE2E2; color:#991B1B'">
-                                        {{ item.status === 'dikembalikan' ? 'Dikembalikan' : 'Terlambat' }}
-                                    </span>
-                                </td>
-                                <td class="px-5 py-4">
-                                    <span v-if="item.denda > 0" class="font-bold text-red-600">{{ formatCurrency(item.denda) }}</span>
-                                    <span v-else class="text-gray-300">—</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
         <!-- ══ CONFIRM MODAL ══ -->

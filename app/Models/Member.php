@@ -22,8 +22,19 @@ class Member extends Model
         'kelas',
         'alamat',
         'telepon',
+        'foto',
+        'tanggal_lahir',
+        'jenis_kelamin',
         'status',
     ];
+
+    protected $appends = ['foto_url'];
+
+    public function getFotoUrlAttribute(): ?string
+    {
+        if (!$this->foto) return null;
+        return asset('storage/' . $this->foto);
+    }
 
     /**
      * Get the user that owns the member profile
@@ -63,7 +74,14 @@ class Member extends Model
     public static function generateMemberNumber(): string
     {
         $year = date('Y');
-        $count = self::whereYear('created_at', $year)->count() + 1;
+        $lastMember = self::whereYear('created_at', $year)->orderBy('id', 'desc')->first();
+        
+        if ($lastMember && preg_match('/MBR\d{4}(\d{4})/', $lastMember->no_anggota, $matches)) {
+            $count = intval($matches[1]) + 1;
+        } else {
+            $count = self::whereYear('created_at', $year)->count() + 1; // Fallback
+        }
+        
         return 'MBR' . $year . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 }

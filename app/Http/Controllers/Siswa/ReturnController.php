@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Borrowing;
+use App\Services\FonnteService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -64,6 +65,19 @@ class ReturnController extends Controller
         }
 
         $borrowing->requestReturn();
+
+        // Kirim notif WA ke siswa
+        $user = $member->user;
+        if ($user->phone) {
+            $fonnte = new FonnteService();
+            $fonnte->send($user->phone,
+                "Halo *{$user->name}*! 📚\n\n"
+                . "Permintaan pengembalian buku berhasil dikirim.\n"
+                . "Judul: *{$borrowing->book->judul}*\n\n"
+                . "Permintaan sedang menunggu konfirmasi Admin.\n"
+                . "Harap segera kembalikan buku ke perpustakaan. 🙏"
+            );
+        }
 
         return back()->with('success', 'Request pengembalian buku "' . $borrowing->book->judul . '" berhasil dikirim. Menunggu persetujuan admin.');
     }

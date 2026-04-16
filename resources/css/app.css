@@ -170,3 +170,23 @@
         @apply bg-background text-foreground;
     }
 }
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+        
+    /* Sembunyikan sidebar trigger & header */
+    [data-slot="sidebar-trigger"] { display: none !important; }
+    header { display: none !important; }
+
+    /* Sembunyikan sidebar wrapper */
+    [data-slot="sidebar-wrapper"] { display: none !important; }
+    
+    /* Sembunyikan sidebar inset yang mungkin ada paddingnya */
+    [data-slot="sidebar-inset"] { 
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}

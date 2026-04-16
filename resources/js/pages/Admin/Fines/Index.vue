@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertTriangle, Search, Check, Clock, DollarSign } from 'lucide-vue-next';
+import { AlertTriangle, Search, Check, Clock, DollarSign, MessageCircle } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ref } from 'vue';
 
@@ -8,6 +8,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    phone: string | null;
 }
 
 interface Member {
@@ -62,8 +63,28 @@ const applyFilters = () => {
 };
 
 const confirmPayment = (borrowing: Borrowing) => {
-    if (confirm(`Konfirmasi pembayaran denda dari "${borrowing.member.user.name}" untuk buku "${borrowing.book.judul}"?`)) {
-        router.post(`/admin/fines/${borrowing.id}/confirm`);
+    if (window.confirm(`Konfirmasi pembayaran denda dari "${borrowing.member.user.name}" untuk buku "${borrowing.book.judul}"?`)) {
+        router.post(`/admin/fines/${borrowing.id}/confirm`, {}, {
+            preserveScroll: true,
+            onFinish: () => window.alert("Tindakan konfirmasi selesai dilaksanakan!")
+        });
+    }
+};
+
+const remindFine = (borrowing: Borrowing) => {
+    if (borrowing.payment_status === 'paid') {
+        window.alert('Denda ini sudah lunas, tidak perlu diingatkan lagi.');
+        return;
+    }
+    if (!borrowing.member.user.phone) {
+        window.alert('Siswa ini belum memiliki nomor WhatsApp terdaftar.');
+        return;
+    }
+    if (window.confirm(`Apakah Anda yakin admin akan mengingatkan user ${borrowing.member.user.name} untuk membayar denda dia?`)) {
+        router.post(`/admin/fines/${borrowing.id}/remind`, {}, {
+            preserveScroll: true,
+            onFinish: () => window.alert("Proses pengingat WhatsApp ke siswa berhasil dijalankan!")
+        });
     }
 };
 
@@ -165,48 +186,7 @@ const formatCurrency = (amount: number) => {
                 </button>
             </div>
 
-            <!-- Active Fines (Berjalan) -->
-            <div v-if="activeFines && activeFines.length > 0" class="overflow-hidden rounded-xl border bg-white dark:bg-gray-800 mb-6 border-orange-200 dark:border-orange-900 border-2">
-                <div class="px-4 py-3 bg-orange-50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-800 flex items-center gap-2">
-                    <Clock class="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                    <h2 class="font-semibold text-orange-900 dark:text-orange-100">Estimasi Denda Berjalan (Buku Belum Dikembalikan)</h2>
-                </div>
-                <table class="w-full">
-                    <thead class="bg-gray-50 dark:bg-gray-700/50 text-xs">
-                        <tr>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Anggota</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Buku</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Batas Kembali</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Status</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-500 dark:text-gray-400">Estimasi Denda</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                        <tr v-for="fine in activeFines" :key="'active-'+fine.id" class="hover:bg-orange-50/50 dark:hover:bg-orange-900/10">
-                            <td class="px-4 py-3">
-                                <div>
-                                    <p class="font-medium text-gray-900 dark:text-white">{{ fine.member.user.name }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ fine.member.no_anggota }}</p>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ fine.book.judul }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                {{ formatDate(fine.tanggal_kembali) }}
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
-                                    Terlambat {{ getDaysLate(fine) }} hari
-                                </span>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="font-bold text-orange-600 dark:text-orange-400">
-                                    {{ formatCurrency(getDaysLate(fine) * 1000) }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+
 
             <!-- Table -->
             <div class="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
@@ -253,16 +233,30 @@ const formatCurrency = (amount: number) => {
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <button
-                                    v-if="fine.payment_status === 'pending'"
-                                    @click="confirmPayment(fine)"
-                                    class="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700"
-                                >
-                                    <Check class="h-4 w-4" />
-                                    Konfirmasi
-                                </button>
-                                <span v-else-if="fine.payment_status === 'paid'" class="text-gray-400">-</span>
-                                <span v-else class="text-sm text-gray-400">Belum bayar</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button
+                                        v-if="fine.payment_status === 'pending'"
+                                        @click="confirmPayment(fine)"
+                                        class="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700"
+                                    >
+                                        <Check class="h-4 w-4" />
+                                        Konfirmasi
+                                    </button>
+                                    <button
+                                        @click="remindFine(fine)"
+                                        :disabled="fine.payment_status === 'paid'"
+                                        :class="[
+                                            'inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors',
+                                            fine.payment_status === 'paid' 
+                                                ? 'bg-gray-400 cursor-not-allowed' 
+                                                : 'bg-green-500 hover:bg-green-600'
+                                        ]"
+                                        :title="fine.payment_status === 'paid' ? 'Sudah lunas' : 'Kirim pengingat via WhatsApp'"
+                                    >
+                                        <MessageCircle class="h-4 w-4" />
+                                        Ingatkan WA
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <tr v-if="fines.data.length === 0">

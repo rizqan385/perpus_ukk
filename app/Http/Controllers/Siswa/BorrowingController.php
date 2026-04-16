@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Borrowing;
+use App\Services\FonnteService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,7 +57,8 @@ class BorrowingController extends Controller
         $member = $user->member;
 
         if (!$member || !$member->isActive()) {
-            return back()->withErrors(['error' => 'Anda harus menjadi anggota aktif untuk meminjam buku.']);
+            return redirect('/siswa/register?incomplete=1')
+                ->with('info', 'Lengkapi data diri terlebih dahulu untuk meminjam buku.');
         }
 
         // Block if has unpaid fines
@@ -103,6 +105,18 @@ class BorrowingController extends Controller
         ]);
 
         // Stock is NOT decremented yet — decremented only when admin approves
+
+        // Kirim notif WA ke siswa
+        if ($user->phone) {
+            $fonnte = new FonnteService();
+            $fonnte->send($user->phone,
+                "Halo *{$user->name}*! 📚\n\n"
+                . "Permintaan peminjaman buku berhasil dikirim.\n"
+                . "Judul: *{$book->judul}*\n\n"
+                . "Permintaan sedang menunggu persetujuan Admin.\n"
+                . "Kami akan memberitahu kamu saat disetujui. 🙏"
+            );
+        }
 
         return back()->with('success', 'Permintaan pinjam buku "' . $book->judul . '" berhasil dikirim. Menunggu konfirmasi admin.');
     }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Siswa\AuthController as SiswaAuthController;
 use App\Http\Controllers\Siswa\BorrowingController;
+use App\Http\Controllers\Siswa\CardController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Siswa\FavoriteController;
 use App\Http\Controllers\Siswa\FineController as SiswaFineController;
@@ -19,6 +20,7 @@ use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Services\FonnteService;
 
 // ─── Public Landing ───────────────────────────────────────────────
 Route::get('/', [LandingController::class, 'index'])->name('home');
@@ -58,7 +60,9 @@ Route::prefix('admin')
         Route::resource('books', BookController::class);
 
         // Members Management
+        Route::get('members/cards', [MemberController::class, 'cards'])->name('members.cards');
         Route::resource('members', MemberController::class);
+        Route::get('members/{member}/card', [MemberController::class, 'card'])->name('members.card');
 
         // Transactions Management
         Route::get('transactions/export', [TransactionController::class, 'export'])->name('transactions.export');
@@ -70,14 +74,16 @@ Route::prefix('admin')
         Route::post('transactions/{transaction}/approve-return', [TransactionController::class, 'approveReturn'])->name('transactions.approve-return');
         Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
-        // Borrow Approvals
+        // Approvals (Borrow + Return)
         Route::get('borrow-approvals', [BorrowApprovalController::class, 'index'])->name('borrow-approvals.index');
         Route::post('borrow-approvals/{borrowing}/approve', [BorrowApprovalController::class, 'approve'])->name('borrow-approvals.approve');
         Route::post('borrow-approvals/{borrowing}/reject', [BorrowApprovalController::class, 'reject'])->name('borrow-approvals.reject');
+        Route::post('borrow-approvals/{borrowing}/approve-return', [BorrowApprovalController::class, 'approveReturn'])->name('borrow-approvals.approve-return');
 
         // Fines Management
         Route::get('fines', [AdminFineController::class, 'index'])->name('fines.index');
         Route::post('fines/{borrowing}/confirm', [AdminFineController::class, 'confirm'])->name('fines.confirm');
+        Route::post('fines/{borrowing}/remind', [AdminFineController::class, 'remind'])->name('fines.remind');
 
         // Settings
         Route::get('settings', [SettingController::class, 'index'])->name('settings');
@@ -109,6 +115,10 @@ Route::prefix('siswa')
         // Favorites
         Route::get('favorites', [FavoriteController::class, 'index'])->name('favorites');
         Route::post('favorites/{book}/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+        // Member Card
+        Route::get('kartu', [CardController::class, 'show'])->name('card');
     });
+    
 
 require __DIR__.'/settings.php';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Users, Mail, Phone, MapPin, GraduationCap, BookOpen, Calendar, Clock } from 'lucide-vue-next';
+import { ArrowLeft, Users, Mail, Phone, MapPin, GraduationCap, BookOpen, Calendar, Clock, CreditCard } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 interface User {
@@ -31,6 +31,9 @@ interface Member {
     kelas: string | null;
     alamat: string | null;
     telepon: string | null;
+    tanggal_lahir: string | null;
+    jenis_kelamin: string | null;
+    foto_url: string | null;
     status: string;
     created_at: string;
     user: User;
@@ -86,6 +89,13 @@ const breadcrumbs = [
                 >
                     Edit Anggota
                 </Link>
+                <Link
+                    :href="`/admin/members/${member.id}/card`"
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                >
+                    <CreditCard class="h-4 w-4" />
+                    Kartu Anggota
+                </Link>
             </div>
 
             <div class="grid gap-6 lg:grid-cols-3">
@@ -93,8 +103,11 @@ const breadcrumbs = [
                 <div class="lg:col-span-1">
                     <div class="rounded-xl border bg-white p-6 dark:bg-gray-800 dark:border-gray-700">
                         <div class="mb-6 flex flex-col items-center text-center">
-                            <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-600">
-                                <Users class="h-10 w-10 text-white" />
+                            <div class="mb-4 h-20 w-20 overflow-hidden rounded-full border-4 border-emerald-200">
+                                <img v-if="member.foto_url" :src="member.foto_url" class="h-full w-full object-cover" alt="Foto" />
+                                <div v-else class="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-600">
+                                    <Users class="h-10 w-10 text-white" />
+                                </div>
                             </div>
                             <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ member.user.name }}</h2>
                             <p class="text-gray-600 dark:text-gray-400">{{ member.no_anggota }}</p>

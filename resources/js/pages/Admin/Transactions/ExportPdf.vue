@@ -24,6 +24,7 @@ interface Borrowing {
 const props = defineProps<{
     borrowings: Borrowing[];
     generatedAt: string;
+    filterLabel: string;
 }>();
 
 const formatDate = (d: string | null) => {
@@ -66,6 +67,7 @@ const print = () => window.print();
         <div class="doc">
             <div class="doc-header">
                 <h1>LAPORAN TRANSAKSI PEMINJAMAN BUKU</h1>
+                <p class="filter-label">Periode: {{ filterLabel }}</p>
                 <p>Perpustakaan — Dicetak pada {{ generatedAt }}</p>
             </div>
 
@@ -152,6 +154,7 @@ const print = () => window.print();
 
 .doc-header { text-align: center; padding-bottom: 14px; border-bottom: 2px solid #1d4ed8; margin-bottom: 16px; }
 .doc-header h1 { font-size: 17px; font-weight: bold; color: #1d4ed8; }
+.doc-header .filter-label { font-size: 12px; color: #1d4ed8; font-weight: 600; margin-top: 4px; }
 .doc-header p  { font-size: 11px; color: #6b7280; margin-top: 4px; }
 
 .summary { display: flex; gap: 12px; margin-bottom: 16px; }

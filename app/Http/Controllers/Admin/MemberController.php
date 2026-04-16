@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,7 +21,7 @@ class MemberController extends Controller
     {
         $query = Member::with('user');
 
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('no_anggota', 'like', "%{$search}%")
@@ -32,7 +33,7 @@ class MemberController extends Controller
             });
         }
 
-        if ($request->has('status') && $request->get('status') !== '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->get('status'));
         }
 
@@ -41,6 +42,14 @@ class MemberController extends Controller
             $query->whereHas('borrowings', function ($q) {
                 $q->where('denda', '>', 0)->whereNull('payment_status');
             });
+        }
+
+        if ($request->filled('kelas')) {
+            $query->where('kelas', $request->get('kelas'));
+        }
+
+        if ($request->filled('jenis_kelamin')) {
+            $query->where('jenis_kelamin', $request->get('jenis_kelamin'));
         }
 
         $members = $query->latest()->paginate(10);
@@ -58,9 +67,12 @@ class MemberController extends Controller
             return $member;
         });
 
+        $allKelas = Member::whereNotNull('kelas')->distinct()->orderBy('kelas')->pluck('kelas');
+
         return Inertia::render('Admin/Members/Index', [
-            'members' => $members,
-            'filters' => $request->only('search', 'status', 'has_fine'),
+            'members'  => $members,
+            'allKelas' => $allKelas,
+            'filters'  => $request->only('search', 'status', 'has_fine', 'kelas', 'jenis_kelamin'),
         ]);
     }
 
@@ -78,28 +90,40 @@ class MemberController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'kelas' => 'nullable|string|max:50',
-            'alamat' => 'nullable|string|max:255',
-            'telepon' => 'nullable|string|max:20',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users,email',
+            'password'      => 'required|string|min:8',
+            'kelas'         => 'nullable|string|max:50',
+            'alamat'        => 'nullable|string|max:255',
+            'telepon'       => 'nullable|string|max:20',
+            'tanggal_lahir' => 'nullable|date',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'siswa',
+            'role'     => 'siswa',
+            'phone'    => $validated['telepon'] ?? null,
         ]);
 
+        $fotoPath = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('members', 'public');
+        }
+
         Member::create([
-            'user_id' => $user->id,
-            'no_anggota' => Member::generateMemberNumber(),
-            'kelas' => $validated['kelas'] ?? null,
-            'alamat' => $validated['alamat'] ?? null,
-            'telepon' => $validated['telepon'] ?? null,
-            'status' => 'aktif',
+            'user_id'       => $user->id,
+            'no_anggota'    => Member::generateMemberNumber(),
+            'kelas'         => $validated['kelas'] ?? null,
+            'alamat'        => $validated['alamat'] ?? null,
+            'telepon'       => $validated['telepon'] ?? null,
+            'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
+            'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
+            'foto'          => $fotoPath,
+            'status'        => 'aktif',
         ]);
 
         return redirect()->route('admin.members.index')
@@ -136,28 +160,94 @@ class MemberController extends Controller
     public function update(Request $request, Member $member): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $member->user_id,
-            'kelas' => 'nullable|string|max:50',
-            'alamat' => 'nullable|string|max:255',
-            'telepon' => 'nullable|string|max:20',
-            'status' => 'required|in:aktif,nonaktif',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users,email,' . $member->user_id,
+            'kelas'         => 'nullable|string|max:50',
+            'alamat'        => 'nullable|string|max:255',
+            'telepon'       => 'nullable|string|max:20',
+            'tanggal_lahir' => 'nullable|date',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'status'        => 'required|in:aktif,nonaktif',
         ]);
 
         $member->user->update([
-            'name' => $validated['name'],
+            'name'  => $validated['name'],
             'email' => $validated['email'],
+            'phone' => $validated['telepon'] ?? null,
         ]);
 
-        $member->update([
-            'kelas' => $validated['kelas'],
-            'alamat' => $validated['alamat'],
-            'telepon' => $validated['telepon'],
-            'status' => $validated['status'],
-        ]);
+        $updateData = [
+            'kelas'         => $validated['kelas'],
+            'alamat'        => $validated['alamat'],
+            'telepon'       => $validated['telepon'],
+            'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
+            'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
+            'status'        => $validated['status'],
+        ];
+
+        if ($request->hasFile('foto')) {
+            // Delete old photo
+            if ($member->foto) {
+                Storage::disk('public')->delete($member->foto);
+            }
+            $updateData['foto'] = $request->file('foto')->store('members', 'public');
+        }
+
+        $member->update($updateData);
 
         return redirect()->route('admin.members.index')
             ->with('success', 'Anggota berhasil diperbarui.');
+    }
+
+    /**
+     * Show the printable member card for admin.
+     */
+    public function card(Member $member): Response
+    {
+        $member->load('user');
+
+        return Inertia::render('Admin/Members/Card', [
+            'member' => $member,
+        ]);
+    }
+
+    /**
+     * Bulk card printing page with filters.
+     */
+    public function cards(Request $request): Response
+    {
+        $query = Member::with('user')->where('status', 'aktif');
+
+        if ($request->get('kelas')) {
+            $query->where('kelas', 'like', '%' . $request->get('kelas') . '%');
+        }
+
+        if ($request->get('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('no_anggota', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        // All distinct classes for filter dropdown
+        $allKelas = Member::whereNotNull('kelas')
+            ->distinct()
+            ->orderBy('kelas')
+            ->pluck('kelas');
+
+        $members = $query->join('users', 'members.user_id', '=', 'users.id')
+            ->orderBy('members.kelas')
+            ->orderBy('users.name')
+            ->select('members.*')
+            ->get();
+
+        return Inertia::render('Admin/Members/Cards', [
+            'members'  => $members,
+            'allKelas' => $allKelas,
+            'filters'  => $request->only('kelas', 'search'),
+        ]);
     }
 
     /**
@@ -165,6 +255,9 @@ class MemberController extends Controller
      */
     public function destroy(Member $member): RedirectResponse
     {
+        if ($member->foto) {
+            Storage::disk('public')->delete($member->foto);
+        }
         $member->user->delete();
 
         return redirect()->route('admin.members.index')

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { BookOpen, User, Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
+import { BookOpen, User, Mail, Lock, Eye, EyeOff, Phone } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 const form = useForm({
     name: '',
     email: '',
+    phone: '',
     password: '',
     password_confirmation: '',
 });
@@ -100,6 +101,21 @@ const submit = () => {
                             />
                         </div>
                         <p v-if="form.errors.email" class="mt-1 text-xs text-red-500">{{ form.errors.email }}</p>
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-semibold" style="color: #5C3D1E;">Nomor WhatsApp</label>
+                        <div class="relative">
+                            <Phone class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" style="color: #C4781A;" />
+                            <input
+                                v-model="form.phone"
+                                type="text"
+                                placeholder="08xxxxxxxxx"
+                                class="w-full rounded-xl border-2 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:shadow-md"
+                                :style="form.errors.phone ? 'border-color:#EF4444' : 'border-color:#E8A020'"
+                            />
+                        </div>
+                        <p v-if="form.errors.phone" class="mt-1 text-xs text-red-500">{{ form.errors.phone }}</p>
                     </div>
 
                     <div>

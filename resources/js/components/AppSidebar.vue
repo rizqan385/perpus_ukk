@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Users, ArrowLeftRight, DollarSign, Book, ArrowBigDownDash, Settings, BookOpen, ClipboardList, Heart } from 'lucide-vue-next';
+import { LayoutGrid, Users, ArrowLeftRight, DollarSign, Book, ArrowBigDownDash, Settings, BookOpen, ClipboardList, Heart, CreditCard, Printer } from 'lucide-vue-next';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -19,7 +19,9 @@ import AppLogo from './AppLogo.vue';
 
 const page = usePage();
 const user = page.props.auth.user as any;
-const pendingBorrowCount = computed(() => (page.props as any).pendingBorrowCount ?? 0);
+const pendingBorrowCount  = computed(() => (page.props as any).pendingBorrowCount  ?? 0);
+const pendingReturnCount  = computed(() => (page.props as any).pendingReturnCount  ?? 0);
+const totalPendingCount   = computed(() => pendingBorrowCount.value + pendingReturnCount.value);
 
 // Dynamic navigation based on user role
 const mainNavItems = computed<NavItem[]>(() => {
@@ -49,15 +51,20 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: ArrowLeftRight,
             },
             {
-                title: 'Persetujuan Pinjam',
+                title: 'Persetujuan',
                 href: '/admin/borrow-approvals',
                 icon: ClipboardList,
-                badge: pendingBorrowCount.value > 0 ? String(pendingBorrowCount.value) : undefined,
+                badge: totalPendingCount.value > 0 ? String(totalPendingCount.value) : undefined,
             },
             {
                 title: 'Denda',
                 href: '/admin/fines',
                 icon: DollarSign,
+            },
+            {
+                title: 'Cetak Kartu',
+                href: '/admin/members/cards',
+                icon: Printer,
             },
             {
                 title: 'Pengaturan',
@@ -86,6 +93,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Denda',
                 href: '/siswa/fines',
                 icon: DollarSign,
+            },
+            {
+                title: 'Kartu Anggota',
+                href: '/siswa/kartu',
+                icon: CreditCard,
             }
         );
     }

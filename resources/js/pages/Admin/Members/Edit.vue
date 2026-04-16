@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3';
-import { Save, ArrowLeft, User, Mail, GraduationCap, MapPin, Phone, ToggleLeft } from 'lucide-vue-next';
+import { Save, ArrowLeft, User, Mail, GraduationCap, MapPin, Phone, ToggleLeft, Camera, X } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { ref } from 'vue';
 
 interface User {
     id: number;
@@ -16,6 +17,7 @@ interface Member {
     alamat: string | null;
     telepon: string | null;
     status: string;
+    foto_url: string | null;
     user: User;
 }
 
@@ -30,10 +32,28 @@ const form = useForm({
     alamat: props.member.alamat || '',
     telepon: props.member.telepon || '',
     status: props.member.status,
+    foto: null as File | null,
+    _method: 'put',
 });
 
+const fotoPreview = ref<string | null>(props.member.foto_url || null);
+
+const onFotoChange = (e: Event) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    form.foto = file;
+    const reader = new FileReader();
+    reader.onload = (ev) => { fotoPreview.value = ev.target?.result as string; };
+    reader.readAsDataURL(file);
+};
+
+const removeFoto = () => {
+    form.foto = null;
+    fotoPreview.value = null;
+};
+
 const submit = () => {
-    form.put(`/admin/members/${props.member.id}`);
+    form.post(`/admin/members/${props.member.id}`, { forceFormData: true });
 };
 
 const breadcrumbs = [
@@ -69,6 +89,46 @@ const breadcrumbs = [
                         <!-- Account Info Section -->
                         <div class="border-b pb-6 dark:border-gray-700">
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Akun</h3>
+
+                            <!-- Foto Upload -->
+                            <div class="mb-6 flex flex-col items-center gap-4 sm:flex-row">
+                                <div class="relative h-24 w-24 overflow-hidden rounded-full border-4 border-white object-cover shadow-lg dark:border-gray-800" style="background: linear-gradient(135deg, #10b981, #047857);">
+                                    <img v-if="fotoPreview" :src="fotoPreview" class="h-full w-full object-cover" />
+                                    <div v-else class="flex h-full items-center justify-center font-bold text-white text-3xl">
+                                        {{ form.name.charAt(0).toUpperCase() }}
+                                    </div>
+                                    <button
+                                        v-if="fotoPreview"
+                                        type="button"
+                                        @click="removeFoto"
+                                        class="absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                                    >
+                                        <X class="h-3 w-3" />
+                                    </button>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Foto Profil (Opsional)</label>
+                                    <div class="relative">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            @change="onFotoChange"
+                                            class="hidden"
+                                            id="foto-upload"
+                                        />
+                                        <label
+                                            for="foto-upload"
+                                            class="inline-flex cursor-pointer items-center gap-2 rounded-lg border bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                                        >
+                                            <Camera class="h-4 w-4" />
+                                            Pilih Foto
+                                        </label>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format: JPG, PNG, max 2MB. Resolusi 3x4 direkomendasikan.</p>
+                                    <p v-if="form.errors.foto" class="mt-1 text-sm text-red-600">{{ form.errors.foto }}</p>
+                                </div>
+                            </div>
+
                             <div class="space-y-4">
                                 <div>
                                     <label for="name" class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">

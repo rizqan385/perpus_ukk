@@ -43,14 +43,21 @@ interface Pagination {
 
 const props = defineProps<{
     borrowings: Pagination;
-    filters: { search?: string; status?: string };
+    allKelas: string[];
+    filters: { search?: string; status?: string; kelas?: string };
 }>();
 
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
+const kelas = ref(props.filters.kelas || '');
+
+const filterType = ref<'daily' | 'monthly' | 'yearly' | ''>('');
+const filterDate = ref('');
+const filterMonth = ref('');
+const filterYear = ref('');
 
 const searchTransactions = () => {
-    router.get('/admin/transactions', { search: search.value, status: status.value }, { preserveState: true });
+    router.get('/admin/transactions', { search: search.value, status: status.value, kelas: kelas.value }, { preserveState: true });
 };
 
 const returnBook = (borrowing: Borrowing) => {
@@ -103,7 +110,14 @@ const exportUrl = (format: string) => {
     const params = new URLSearchParams();
     if (search.value) params.set('search', search.value);
     if (status.value) params.set('status', status.value);
+    if (kelas.value) params.set('kelas', kelas.value);
     params.set('format', format);
+
+    if (filterType.value) params.set('filter_type', filterType.value);
+    if (filterType.value === 'daily' && filterDate.value) params.set('date', filterDate.value);
+    if (filterType.value === 'monthly' && filterMonth.value) params.set('month', filterMonth.value);
+    if (filterType.value === 'yearly' && filterYear.value) params.set('year', filterYear.value);
+
     return `/admin/transactions/export?${params.toString()}`;
 };
 
@@ -176,12 +190,56 @@ const breadcrumbs = [
                     <option value="dikembalikan">Dikembalikan</option>
                     <option value="terlambat">Terlambat</option>
                 </select>
+                <select
+                    v-model="kelas"
+                    @change="searchTransactions"
+                    class="rounded-lg border bg-white px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                >
+                    <option value="">Semua Kelas</option>
+                    <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
+                </select>
                 <button
                     @click="searchTransactions"
                     class="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                     Cari
                 </button>
+            </div>
+
+            <!-- Filter Periode Laporan PDF -->
+            <div class="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-red-300 bg-red-50 px-4 py-3 dark:border-red-700 dark:bg-red-900/10">
+                <span class="text-sm font-semibold text-red-700 dark:text-red-400">🖨️ Filter Periode PDF:</span>
+                <select
+                    v-model="filterType"
+                    class="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-800 dark:border-red-700 dark:text-white"
+                >
+                    <option value="">Semua Waktu</option>
+                    <option value="daily">Harian</option>
+                    <option value="monthly">Bulanan</option>
+                    <option value="yearly">Tahunan</option>
+                </select>
+                <input
+                    v-if="filterType === 'daily'"
+                    v-model="filterDate"
+                    type="date"
+                    class="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-800 dark:border-red-700 dark:text-white"
+                />
+                <input
+                    v-if="filterType === 'monthly'"
+                    v-model="filterMonth"
+                    type="month"
+                    class="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-800 dark:border-red-700 dark:text-white"
+                />
+                <input
+                    v-if="filterType === 'yearly'"
+                    v-model="filterYear"
+                    type="number"
+                    placeholder="Tahun (mis. 2026)"
+                    min="2020"
+                    max="2099"
+                    class="w-36 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-800 dark:border-red-700 dark:text-white"
+                />
+                <span class="text-xs text-red-500 dark:text-red-400">Filter ini hanya berlaku saat cetak PDF</span>
             </div>
 
             <!-- Table -->

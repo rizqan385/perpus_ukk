@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Users, Plus, Search, Edit, Trash2, Eye, AlertTriangle } from 'lucide-vue-next';
+import { Users, Plus, Search, Edit, Trash2, Eye, AlertTriangle, Printer, CreditCard } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ref } from 'vue';
 
@@ -17,6 +17,7 @@ interface Member {
     alamat: string | null;
     telepon: string | null;
     status: string;
+    foto_url: string | null;
     user: User;
     total_fines: number;
     pending_fines: number;
@@ -33,15 +34,24 @@ interface Pagination {
 
 const props = defineProps<{
     members: Pagination;
-    filters: { search?: string; status?: string; has_fine?: string };
+    allKelas: string[];
+    filters: { search?: string; status?: string; has_fine?: string; kelas?: string; jenis_kelamin?: string };
 }>();
 
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
 const hasFine = ref(props.filters.has_fine || '');
+const kelas = ref(props.filters.kelas || '');
+const jenisKelamin = ref(props.filters.jenis_kelamin || '');
 
 const searchMembers = () => {
-    router.get('/admin/members', { search: search.value, status: status.value, has_fine: hasFine.value }, { preserveState: true });
+    router.get('/admin/members', { 
+        search: search.value, 
+        status: status.value, 
+        has_fine: hasFine.value,
+        kelas: kelas.value,
+        jenis_kelamin: jenisKelamin.value
+    }, { preserveState: true });
 };
 
 const deleteMember = (member: Member) => {
@@ -106,6 +116,23 @@ const breadcrumbs = [
                     <option value="nonaktif">Nonaktif</option>
                 </select>
                 <select
+                    v-model="kelas"
+                    @change="searchMembers"
+                    class="rounded-lg border bg-white px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                >
+                    <option value="">Semua Kelas</option>
+                    <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
+                </select>
+                <select
+                    v-model="jenisKelamin"
+                    @change="searchMembers"
+                    class="rounded-lg border bg-white px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                >
+                    <option value="">Semua Gender</option>
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                </select>
+                <select
                     v-model="hasFine"
                     @change="searchMembers"
                     class="rounded-lg border bg-white px-4 py-2 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
@@ -139,8 +166,11 @@ const breadcrumbs = [
                         <tr v-for="member in members.data" :key="member.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
-                                        <Users class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                    <div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full shadow-sm" style="background: linear-gradient(135deg, #10b981, #047857);">
+                                        <img v-if="member.foto_url" :src="member.foto_url" class="h-full w-full object-cover" alt="foto" />
+                                        <div v-else class="flex h-full items-center justify-center text-sm font-bold text-white">
+                                            {{ member.user.name.charAt(0).toUpperCase() }}
+                                        </div>
                                     </div>
                                     <span class="font-medium text-gray-900 dark:text-white">{{ member.no_anggota }}</span>
                                 </div>
@@ -179,6 +209,13 @@ const breadcrumbs = [
                                         title="Lihat"
                                     >
                                         <Eye class="h-4 w-4" />
+                                    </Link>
+                                    <Link
+                                        :href="`/admin/members/${member.id}/card`"
+                                        class="rounded p-1.5 text-gray-500 hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-gray-700"
+                                        title="Kartu Anggota"
+                                    >
+                                        <CreditCard class="h-4 w-4" />
                                     </Link>
                                     <Link
                                         :href="`/admin/members/${member.id}/edit`"

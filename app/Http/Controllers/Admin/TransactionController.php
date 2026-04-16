@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\FonnteService;
 use App\Models\Book;
 use App\Models\Borrowing;
 use App\Models\Member;
@@ -21,7 +22,7 @@ class TransactionController extends Controller
     {
         $query = Borrowing::with(['member.user', 'book']);
 
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->whereHas('member.user', function ($q) use ($search) {
@@ -34,15 +35,24 @@ class TransactionController extends Controller
             });
         }
 
-        if ($request->has('status') && $request->get('status') !== '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->get('status'));
         }
 
+        if ($request->filled('kelas')) {
+            $kelas = $request->get('kelas');
+            $query->whereHas('member', function ($q) use ($kelas) {
+                $q->where('kelas', $kelas);
+            });
+        }
+
         $borrowings = $query->latest()->paginate(10);
+        $allKelas = Member::whereNotNull('kelas')->distinct()->orderBy('kelas')->pluck('kelas');
 
         return Inertia::render('Admin/Transactions/Index', [
             'borrowings' => $borrowings,
-            'filters'    => $request->only('search', 'status'),
+            'allKelas' => $allKelas,
+            'filters' => $request->only('search', 'status', 'kelas'),
         ]);
     }
 
@@ -53,17 +63,36 @@ class TransactionController extends Controller
     {
         $query = Borrowing::with(['member.user', 'book'])->latest();
 
-        if ($request->get('search')) {
+        if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->whereHas('member.user', fn($q) => $q->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('book', fn($q) => $q->where('judul', 'like', "%{$search}%"))
-                  ->orWhereHas('member', fn($q) => $q->where('no_anggota', 'like', "%{$search}%"));
+                    ->orWhereHas('book', fn($q) => $q->where('judul', 'like', "%{$search}%"))
+                    ->orWhereHas('member', fn($q) => $q->where('no_anggota', 'like', "%{$search}%"));
             });
         }
 
-        if ($request->get('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->get('status'));
+        }
+
+        if ($request->filled('kelas')) {
+            $kelas = $request->get('kelas');
+            $query->whereHas('member', function ($q) use ($kelas) {
+                $q->where('kelas', $kelas);
+            });
+        }
+
+        // Filter berdasarkan periode waktu
+        $filterType = $request->get('filter_type');
+        if ($filterType === 'daily' && $request->get('date')) {
+            $query->whereDate('tanggal_pinjam', $request->get('date'));
+        } elseif ($filterType === 'monthly' && $request->get('month')) {
+            [$year, $month] = explode('-', $request->get('month'));
+            $query->whereYear('tanggal_pinjam', $year)
+                ->whereMonth('tanggal_pinjam', $month);
+        } elseif ($filterType === 'yearly' && $request->get('year')) {
+            $query->whereYear('tanggal_pinjam', $request->get('year'));
         }
 
         $data = $query->get();
@@ -71,8 +100,8 @@ class TransactionController extends Controller
 
         if ($format === 'csv') {
             $filename = 'laporan-transaksi-' . now()->format('Y-m-d') . '.csv';
-            $headers  = [
-                'Content-Type'        => 'text/csv; charset=UTF-8',
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
                 'Content-Disposition' => "attachment; filename={$filename}",
             ];
 
@@ -102,9 +131,19 @@ class TransactionController extends Controller
         }
 
         // PDF: render Inertia print page
+        $filterLabel = 'Semua Periode';
+        if ($filterType === 'daily' && $request->get('date')) {
+            $filterLabel = 'Harian: ' . Carbon::parse($request->get('date'))->translatedFormat('d F Y');
+        } elseif ($filterType === 'monthly' && $request->get('month')) {
+            $filterLabel = 'Bulanan: ' . Carbon::parse($request->get('month') . '-01')->translatedFormat('F Y');
+        } elseif ($filterType === 'yearly' && $request->get('year')) {
+            $filterLabel = 'Tahunan: ' . $request->get('year');
+        }
+
         return Inertia::render('Admin/Transactions/ExportPdf', [
-            'borrowings'  => $data,
+            'borrowings' => $data,
             'generatedAt' => now()->setTimezone('Asia/Jakarta')->format('d F Y, H:i') . ' WIB',
+            'filterLabel' => $filterLabel,
         ]);
     }
 
@@ -162,7 +201,21 @@ class TransactionController extends Controller
         ]);
 
         // Kurangi stok buku
+        // Kurangi stok buku
         $book->decrement('stok');
+
+        // Kirim notif WA ke anggota
+        $member->load('user');
+        $fonnte = new FonnteService();
+        $fonnte->send(
+            $member->user->phone,
+            "Halo *{$member->user->name}*! 📚\n\n"
+            . "Peminjaman buku berhasil.\n"
+            . "Judul: *{$book->judul}*\n"
+            . "Tgl pinjam: " . Carbon::parse($validated['tanggal_pinjam'])->format('d/m/Y') . "\n"
+            . "Batas kembali: " . Carbon::parse($validated['tanggal_kembali'])->format('d/m/Y') . "\n\n"
+            . "Kembalikan tepat waktu ya. Terima kasih!"
+        );
 
         return redirect()->route('admin.transactions.index')
             ->with('success', 'Transaksi peminjaman berhasil dibuat.');
@@ -210,14 +263,28 @@ class TransactionController extends Controller
         }
 
         $transaction->returnBook();
+$message = 'Pengembalian buku berhasil disetujui.';
+if ($transaction->denda > 0) {
+    $message .= ' Denda keterlambatan: Rp ' . number_format($transaction->denda, 0, ',', '.');
+}
 
-        $message = 'Pengembalian buku berhasil disetujui.';
-        if ($transaction->denda > 0) {
-            $message .= ' Denda keterlambatan: Rp ' . number_format($transaction->denda, 0, ',', '.');
-        }
+// Kirim notif WA ke anggota
+$transaction->load('member.user', 'book');
+$fonnte = new FonnteService();
+$waMessage = "Halo *{$transaction->member->user->name}*!\n\n"
+    . "Pengembalian buku telah dikonfirmasi.\n"
+    . "Judul: *{$transaction->book->judul}*\n";
 
-        return redirect()->route('admin.transactions.index')
-            ->with('success', $message);
+if ($transaction->denda > 0) {
+    $waMessage .= "Denda: *Rp " . number_format($transaction->denda, 0, ',', '.') . "*\n"
+        . "Harap segera lunasi denda di perpustakaan.\n";
+}
+
+$waMessage .= "\nTerima kasih!";
+$fonnte->send($transaction->member->user->phone, $waMessage);
+
+return redirect()->route('admin.transactions.index')
+    ->with('success', $message);
     }
 
     /**
