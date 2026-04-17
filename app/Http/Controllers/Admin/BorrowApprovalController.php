@@ -14,14 +14,11 @@ use Inertia\Response;
 
 class BorrowApprovalController extends Controller
 {
-    /**
-     * Unified approvals page: pending borrows + pending returns.
-     */
     public function index(Request $request): Response
     {
         $search = $request->input('search');
 
-        // ── Pending borrow requests ─────────────────────────────────────
+       
         $borrowQuery = Borrowing::with(['member.user', 'book'])
             ->where('status', 'menunggu_persetujuan')
             ->latest();
@@ -52,7 +49,7 @@ class BorrowApprovalController extends Controller
             ],
         ]);
 
-        // ── Pending return requests ─────────────────────────────────────
+       
         $returnQuery = Borrowing::with(['member.user', 'book'])
             ->where('status', 'menunggu_pengembalian')
             ->latest();
@@ -114,7 +111,6 @@ class BorrowApprovalController extends Controller
 
         $borrowing->book->decrement('stok');
         
-        // Kirim notif WA ke anggota
         $borrowing->load('member.user');
         $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;
 
@@ -144,7 +140,6 @@ class BorrowApprovalController extends Controller
 
         $borrowing->delete();
         
-        // Kirim notif WA ke anggota
         $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;
         
         if ($phoneNumber) {
@@ -160,9 +155,7 @@ class BorrowApprovalController extends Controller
         return back()->with('success', "Permintaan pinjam \"{$bookTitle}\" dari {$memberName} ditolak.");
     }
 
-    /**
-     * Approve a return request (moved here from TransactionController).
-     */
+
     public function approveReturn(Borrowing $borrowing): RedirectResponse
     {
         if ($borrowing->status !== 'menunggu_pengembalian') {
