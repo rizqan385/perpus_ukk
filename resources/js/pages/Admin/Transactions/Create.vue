@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import { ArrowLeftRight, ArrowLeft, Users, BookOpen, Calendar } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, computed } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 interface User {
     name: string;

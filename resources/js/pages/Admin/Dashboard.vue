@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { BookOpen, Users, ArrowLeftRight, AlertTriangle } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { Chart, registerables } from 'chart.js';
+import { BookOpen, Users, ArrowLeftRight, AlertTriangle } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 Chart.register(...registerables);
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
 import { AlertTriangle, CreditCard, Clock, CheckCircle, ShieldCheck, ChevronRight, BookOpen, TrendingUp } from 'lucide-vue-next';
-import SiswaLayout from '@/layouts/SiswaLayout.vue';
-import Pagination from '@/components/Pagination.vue';
 import { computed } from 'vue';
+import Pagination from '@/components/Pagination.vue';
+import SiswaLayout from '@/layouts/SiswaLayout.vue';
 
 interface Book { id: number; judul: string; pengarang: string; }
 

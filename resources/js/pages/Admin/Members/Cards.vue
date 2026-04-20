@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Printer, Search, Filter, CreditCard, ArrowLeft, Users, CheckSquare, Square, X } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, computed } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 interface User { id: number; name: string; email: string; }
 interface Member {

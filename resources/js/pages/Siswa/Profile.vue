@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { User, Mail, Phone, MapPin, Camera, Lock, Save, ArrowLeft, CheckCircle } from 'lucide-vue-next';
-import SiswaLayout from '@/layouts/SiswaLayout.vue';
 import { ref, computed } from 'vue';
+import SiswaLayout from '@/layouts/SiswaLayout.vue';
 
 const props = defineProps<{
     user: any;

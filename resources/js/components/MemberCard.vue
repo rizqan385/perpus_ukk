@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import jsPDF from 'jspdf'
+import { ref } from 'vue'
 
 interface Member {
     name: string

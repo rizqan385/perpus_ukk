@@ -11,9 +11,9 @@ import {
     ChevronRight,
     Check,
 } from 'lucide-vue-next';
-import SiswaLayout from '@/layouts/SiswaLayout.vue';
-import Pagination from '@/components/Pagination.vue';
 import { ref, computed, watch } from 'vue';
+import Pagination from '@/components/Pagination.vue';
+import SiswaLayout from '@/layouts/SiswaLayout.vue';
 
 interface Book {
     id: number;

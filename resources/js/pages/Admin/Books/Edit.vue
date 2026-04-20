@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Upload, X, ImageIcon, Trash2 } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { ref } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 interface Book {
     id: number;

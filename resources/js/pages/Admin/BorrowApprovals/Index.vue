@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
 import { ClipboardList, Check, X, BookOpen, Clock, Search, ArrowLeftRight, PartyPopper } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { ref, computed } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 interface Member { id: number; no_anggota: string; name: string; }
 interface Book   { id: number; judul: string; pengarang: string; cover_image: string | null; }

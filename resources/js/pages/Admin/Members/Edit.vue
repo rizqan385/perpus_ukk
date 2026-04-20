@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import { Save, ArrowLeft, User, Mail, GraduationCap, MapPin, Phone, ToggleLeft, Camera, X } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { ref } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 interface User {
     id: number;

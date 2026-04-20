@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ArrowLeftRight, Search, Eye, Trash2, RotateCcw, CheckCircle, Printer } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
-import Pagination from '@/components/Pagination.vue';
 import { ref, computed } from 'vue';
+import Pagination from '@/components/Pagination.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 interface User {
     name: string;

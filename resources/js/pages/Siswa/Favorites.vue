@@ -11,8 +11,8 @@ import {
     Calendar,
     X,
 } from 'lucide-vue-next';
-import SiswaLayout from '@/layouts/SiswaLayout.vue';
 import { computed, ref } from 'vue';
+import SiswaLayout from '@/layouts/SiswaLayout.vue';
 
 interface FavBook {
     id: number;
