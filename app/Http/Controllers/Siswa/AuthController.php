@@ -88,7 +88,7 @@ class AuthController extends Controller
             return back()->withErrors(['otp' => 'Kode OTP tidak valid.']);
         }
 
-        // OTP is valid! Create the user.
+        // OTP is valid! Create the user and mark as verified.
         $user = User::create([
             'name' => $regData['name'],
             'email' => $regData['email'],
@@ -96,6 +96,8 @@ class AuthController extends Controller
             'password' => $regData['password'],
             'role' => 'siswa',
         ]);
+
+        $user->markEmailAsVerified();
 
         // Clear session data
         $request->session()->forget(['registration_data', 'registration_otp', 'registration_otp_expires']);
@@ -123,7 +125,11 @@ class AuthController extends Controller
             . "*{$otpCode}*\n\n"
             . "Kode ini berlaku selama 10 menit.";
 
-        $fonnte->send($regData['phone'], $message);
+        $sent = $fonnte->send($regData['phone'], $message);
+
+        if (!$sent) {
+            return back()->withErrors(['error' => 'Gagal mengirim OTP via WhatsApp. Pastikan token Fonnte sudah benar atau hubungi admin.']);
+        }
 
         return back()->with('success', 'Kode OTP baru telah dikirim ke WhatsApp Anda.');
     }
