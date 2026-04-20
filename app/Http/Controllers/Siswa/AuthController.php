@@ -61,7 +61,7 @@ class AuthController extends Controller
         try {
             Mail::raw("Halo {$validated['name']}! 👋\n\nKode OTP pendaftaran Anda di E-Perpustakaan adalah:\n\n{$otpCode}\n\nKode ini berlaku selama 10 menit. Jangan berikan kode ini kepada siapapun.", function ($message) use ($validated) {
                 $message->to($validated['email'])
-                        ->subject('Kode OTP Pendaftaran E-Perpustakaan');
+                    ->subject('Kode OTP Pendaftaran E-Perpustakaan');
             });
             return redirect()->route('siswa.otp.page')->with('success', 'Kode OTP telah dikirim ke Alamat Email Anda.');
         } catch (\Exception $e) {

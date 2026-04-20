@@ -50,6 +50,7 @@ Route::get('/siswa/verifikasi-otp', function () {
         'phone' => session('registration_data.phone'),
         'email' => session('registration_data.email'),
         'success' => session('success'),
+        'debug_otp' => config('app.debug') ? session('registration_otp') : null,
         'errors' => session('errors') ? session('errors')->getBag('default')->getMessages() : (object) [],
     ]);
 })->middleware('guest')->name('siswa.otp.page');
