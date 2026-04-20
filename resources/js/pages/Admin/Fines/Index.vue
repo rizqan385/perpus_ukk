@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { AlertTriangle, Search, Check, Clock, DollarSign, MessageCircle } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
+import Pagination from '@/components/Pagination.vue';
 import { ref } from 'vue';
 
 interface User {
@@ -273,26 +274,7 @@ const formatCurrency = (amount: number) => {
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     Menampilkan {{ fines.data.length }} dari {{ fines.total }} denda
                 </p>
-                <div class="flex gap-1">
-                    <template v-for="link in fines.links" :key="link.label">
-                        <Link
-                            v-if="link.url"
-                            :href="link.url"
-                            :class="[
-                                'rounded px-3 py-1 text-sm',
-                                link.active
-                                    ? 'bg-red-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
-                            ]"
-                            v-html="link.label"
-                        />
-                        <span
-                            v-else
-                            class="rounded px-3 py-1 text-sm text-gray-400"
-                            v-html="link.label"
-                        />
-                    </template>
-                </div>
+                <Pagination :links="fines.links" />
             </div>
         </div>
     </AppLayout>

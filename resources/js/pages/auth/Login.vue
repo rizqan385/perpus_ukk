@@ -76,6 +76,14 @@ defineProps<{
                         <Checkbox id="remember" name="remember" :tabindex="3" />
                         <span>Remember me</span>
                     </Label>
+                    <TextLink
+                        v-if="canResetPassword"
+                        :href="request()"
+                        class="text-sm"
+                        :tabindex="5"
+                    >
+                        Forgot your password?
+                    </TextLink>
                 </div>
 
                 <Button

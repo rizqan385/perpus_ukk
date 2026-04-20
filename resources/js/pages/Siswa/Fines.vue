@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { AlertTriangle, CreditCard, Clock, CheckCircle, ShieldCheck, ChevronRight, BookOpen, TrendingUp } from 'lucide-vue-next';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
+import Pagination from '@/components/Pagination.vue';
 import { computed } from 'vue';
 
 interface Book { id: number; judul: string; pengarang: string; }
@@ -16,21 +17,27 @@ interface Borrowing {
     book: Book;
 }
 
+interface PaginationData {
+    data: Borrowing[];
+    links: Array<{ url: string | null; label: string; active: boolean }>;
+}
+
 interface Member { no_anggota: string; }
 
 const props = defineProps<{
     activeFines: Borrowing[];
     unpaidFines: Borrowing[];
     pendingFines: Borrowing[];
-    paidFines: Borrowing[];
+    paidFines: PaginationData;
     totalUnpaid: number;
     totalPending: number;
+    totalPaidHistory: number;
     member: Member;
 }>();
 
 const allUnpaid = computed(() => [...props.unpaidFines, ...props.pendingFines]);
 const totalAll = computed(() => props.totalUnpaid + props.totalPending);
-const totalPaid = computed(() => props.paidFines.reduce((s, f) => s + f.denda, 0));
+const totalPaid = computed(() => props.totalPaidHistory);
 
 const formatDate = (date: string) => new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -64,8 +71,7 @@ const payOnline = async (borrowing: Borrowing) => {
         const data = await response.json();
         
         if (data.token) {
-            // @ts-ignore - window.snap is from Midtrans script
-            window.snap.pay(data.token, {
+            (window as any).snap.pay(data.token, {
                 onSuccess: () => {
                     router.get(`/siswa/payment/${borrowing.id}/success`);
                 },
@@ -89,7 +95,6 @@ const payOnline = async (borrowing: Borrowing) => {
 <template>
     <Head title="Denda Saya — E-Perpustakaan" />
     <SiswaLayout>
-        <!-- ══ HERO HEADER ══ -->
         <section style="background: linear-gradient(135deg, #5C3D1E 0%, #3D2810 100%);" class="relative overflow-hidden py-12 px-6">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute right-0 top-0 h-48 w-48 rounded-full opacity-10" style="background: #E8A020;"></div>
@@ -145,7 +150,7 @@ const payOnline = async (borrowing: Borrowing) => {
                 <div class="rounded-2xl border-2 p-5 text-center transition hover:shadow-md" style="border-color: #22C55E; background: #F0FDF4;">
                     <p class="text-xs font-bold uppercase tracking-wider text-green-500 mb-1">Sudah Lunas</p>
                     <p class="text-2xl font-black text-green-600">{{ formatCurrency(totalPaid) }}</p>
-                    <p class="mt-1 text-xs text-green-400">{{ paidFines.length }} item</p>
+                    <p class="mt-1 text-xs text-green-400">Total riwayat</p>
                 </div>
             </div>
 
@@ -240,7 +245,7 @@ const payOnline = async (borrowing: Borrowing) => {
             </div>
 
             <!-- ══ RIWAYAT PEMBAYARAN ══ -->
-            <div v-if="paidFines.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #86EFAC;">
+            <div v-if="paidFines.data.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #86EFAC;">
                 <div class="flex items-center gap-3 px-6 py-4 border-b" style="background: #F0FDF4; border-color: #86EFAC;">
                     <div class="flex h-9 w-9 items-center justify-center rounded-full bg-green-100">
                         <CheckCircle class="h-5 w-5 text-green-500" />
@@ -256,7 +261,7 @@ const payOnline = async (borrowing: Borrowing) => {
                     </div>
                 </div>
                 <div class="divide-y" style="border-color: #DCFCE7;">
-                    <div v-for="fine in paidFines" :key="'paid-' + fine.id" class="flex items-center justify-between px-6 py-4 hover:bg-green-50 transition">
+                    <div v-for="fine in paidFines.data" :key="'paid-' + fine.id" class="flex items-center justify-between px-6 py-4 hover:bg-green-50 transition">
                         <div class="flex items-center gap-4">
                             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-100">
                                 <BookOpen class="h-5 w-5 text-green-600" />
@@ -271,6 +276,10 @@ const payOnline = async (borrowing: Borrowing) => {
                             <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">✓ Lunas</span>
                         </div>
                     </div>
+                </div>
+                <!-- Pagination -->
+                <div class="p-4 border-t flex justify-center bg-green-50">
+                    <Pagination :links="paidFines.links" />
                 </div>
             </div>
         </div>

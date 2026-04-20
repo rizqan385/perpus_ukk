@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Users, Plus, Search, Edit, Trash2, Eye, AlertTriangle, Printer, CreditCard } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
+import Pagination from '@/components/Pagination.vue';
 import { ref } from 'vue';
 
 interface User {
@@ -248,26 +249,7 @@ const breadcrumbs = [
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     Menampilkan {{ members.data.length }} dari {{ members.total }} anggota
                 </p>
-                <div class="flex gap-1">
-                    <template v-for="link in members.links" :key="link.label">
-                        <Link
-                            v-if="link.url"
-                            :href="link.url"
-                            :class="[
-                                'rounded px-3 py-1 text-sm',
-                                link.active
-                                    ? 'bg-emerald-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
-                            ]"
-                            v-html="link.label"
-                        />
-                        <span
-                            v-else
-                            class="rounded px-3 py-1 text-sm text-gray-400"
-                            v-html="link.label"
-                        />
-                    </template>
-                </div>
+                <Pagination :links="members.links" />
             </div>
         </div>
     </AppLayout>

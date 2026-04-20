@@ -253,7 +253,7 @@ const breadcrumbs = [
 .card-mini {
     border-radius: 10px;
     overflow: hidden;
-    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%);
+    background: linear-gradient(135deg, #E8A020 0%, #C4781A 60%, #92400E 100%);
 }
 .card-mini-body { display: flex; gap: 8px; padding: 8px; align-items: center; }
 .card-mini-photo {
@@ -299,7 +299,7 @@ const breadcrumbs = [
         width: 85.6mm;
         border-radius: 4mm;
         overflow: hidden;
-        background: #1d4ed8;
+        background: linear-gradient(135deg, #E8A020 0%, #C4781A 60%, #92400E 100%);
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
         page-break-inside: avoid;

@@ -107,6 +107,10 @@ const logout = () => {
                                     <CreditCard class="h-4 w-4 text-orange-500" />
                                     Kartu Anggota
                                 </Link>
+                                <Link href="/siswa/profile" class="flex items-center gap-2 px-6 py-2 text-sm hover:bg-orange-50" style="color: #5C3D1E;" @click="isOpen=false">
+                                    <User class="h-4 w-4 text-orange-500" />
+                                    Profil Saya
+                                </Link>
                                 <hr class="my-1" style="border-color: #F0D6A8;" />
                                 <Link
                                     href="/logout"
@@ -188,6 +192,9 @@ const logout = () => {
                                 </Link>
                                 <Link href="/siswa/kartu" class="flex items-center gap-3 px-6 py-4 text-base font-bold border-b transition-colors hover:bg-orange-50" style="color: #5C3D1E; border-color: #F0D6A8;" @click="mobileMenuOpen=false">
                                     <CreditCard class="h-5 w-5" style="color: #E8A020;" /> Kartu Anggota
+                                </Link>
+                                <Link href="/siswa/profile" class="flex items-center gap-3 px-6 py-4 text-base font-bold border-b transition-colors hover:bg-orange-50" style="color: #5C3D1E; border-color: #F0D6A8;" @click="mobileMenuOpen=false">
+                                    <User class="h-5 w-5" style="color: #E8A020;" /> Profil Saya
                                 </Link>
                                 
                                 <div class="p-6 mt-auto flex flex-col gap-3 border-t-2" style="border-color: #F0D6A8; background: #FFF8F0;">

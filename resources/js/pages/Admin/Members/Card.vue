@@ -117,8 +117,8 @@ const printCard = () => window.print();
     width: 340px;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-    background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%);
+    box-shadow: 0 20px 60px rgba(92, 61, 30, 0.4);
+    background: linear-gradient(135deg, #E8A020 0%, #C4781A 60%, #92400E 100%);
 }
 
 .card-header {
@@ -217,24 +217,66 @@ const printCard = () => window.print();
 
 /* ── Print styles ── */
 @media print {
+    @page {
+        size: 85.6mm 54mm;
+        margin: 0;
+    }
+
     #app { 
         display: none !important; 
     }
 
+    body {
+        background: white !important;
+    }
+
     .card-wrap {
         display: block !important;
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
-        width: 85.6mm !important;
+        width: 100mm !important; /* Larger for better resolution on paper */
+        height: 60mm !important;
         visibility: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     .card-front {
-        width: 85.6mm;
-        border-radius: 4mm;
+        width: 100mm;
+        height: 60mm;
+        border-radius: 0;
+        box-shadow: none !important;
+        background: white !important; /* Hemat tinta */
+        border: 1px solid #000;
+        color: black !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+
+    .card-header, .card-footer {
+        background: #f3f4f6 !important;
+        color: black !important;
+        border-bottom: 1px solid #000;
+    }
+
+    .card-footer {
+        border-bottom: none;
+        border-top: 1px solid #000;
+    }
+
+    .card-name, .card-no, .card-pill, .card-tgl {
+        color: black !important;
+    }
+
+    .card-photo {
+        border: 2px solid #000 !important;
+        background: white !important;
+    }
+
+    .card-pill {
+        border: 1px solid #000 !important;
+        background: white !important;
     }
 }
 </style>

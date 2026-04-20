@@ -13,7 +13,7 @@ import {
     CheckCircle,
 } from 'lucide-vue-next';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 interface Book {
     id: number;
@@ -50,6 +50,12 @@ const searchQuery = ref(props.search);
 const doSearch = () => {
     router.get('/', { search: searchQuery.value }, { preserveState: false });
 };
+
+watch(searchQuery, (newVal) => {
+    if (newVal === '') {
+        doSearch();
+    }
+});
 
 const toggleFavorite = (book: Book) => {
     if (!user.value) {
@@ -92,7 +98,7 @@ const requestReturn = () => {
 const coverUrl = (book: Book) =>
     book.cover_image ? `/storage/${book.cover_image}` : null;
 
-// Modal State
+
 const showBookModal = ref(false);
 const selectedBook = ref<Book | null>(null);
 
@@ -111,7 +117,6 @@ const closeBookModal = () => {
 <template>
     <Head title="E-Perpustakaan — Beranda" />
     <SiswaLayout>
-        <!-- ══════════════════ HERO ══════════════════ -->
         <section
             class="relative overflow-hidden"
             style="

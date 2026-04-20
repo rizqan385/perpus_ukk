@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { BookOpen, Calendar, Search, X, Eye, Edit, Trash2 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
+import Pagination from '@/components/Pagination.vue';
 import { ref, watch } from 'vue';
 
 interface Book {
@@ -234,26 +235,7 @@ const breadcrumbs = [
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     Menampilkan {{ books.data.length }} dari {{ books.total }} buku
                 </p>
-                <div class="flex gap-1">
-                    <template v-for="link in books.links" :key="link.label">
-                        <a
-                            v-if="link.url"
-                            :href="link.url"
-                            :class="[
-                                'rounded px-3 py-1 text-sm',
-                                link.active
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
-                            ]"
-                            v-html="link.label"
-                        />
-                        <span
-                            v-else
-                            class="rounded px-3 py-1 text-sm text-gray-400"
-                            v-html="link.label"
-                        />
-                    </template>
-                </div>
+                <Pagination :links="books.links" />
             </div>
         </div>
     </AppLayout>

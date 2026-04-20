@@ -80,7 +80,6 @@ class BorrowApprovalController extends Controller
             ],
         ]);
 
-        // Real total (unfiltered) for badge count
         $totalBorrows = Borrowing::where('status', 'menunggu_persetujuan')->count();
         $totalReturns = Borrowing::where('status', 'menunggu_pengembalian')->count();
 
@@ -162,14 +161,12 @@ class BorrowApprovalController extends Controller
             return back()->withErrors(['error' => 'Peminjaman ini tidak sedang dalam status menunggu pengembalian.']);
         }
 
-        // 1. Proses pengembalian di database dulu agar tombol tidak macet
         $borrowing->returnBook();
         $message = 'Pengembalian buku berhasil disetujui.';
         if ($borrowing->denda > 0) {
             $message .= ' Denda keterlambatan: Rp ' . number_format($borrowing->denda, 0, ',', '.');
         }
 
-        // 2. Kirim notif WA (menggunakan try-catch agar jika WA error, proses di atas tidak batal)
         try {
             $borrowing->load('member.user', 'book');
             $phoneNumber = $borrowing->member->telepon ?? $borrowing->member->user->phone;

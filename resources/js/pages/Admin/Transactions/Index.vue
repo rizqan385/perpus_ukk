@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeftRight, Search, Eye, Trash2, RotateCcw, CheckCircle, FileSpreadsheet, Printer } from 'lucide-vue-next';
+import { ArrowLeftRight, Search, Eye, Trash2, RotateCcw, CheckCircle, Printer } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
+import Pagination from '@/components/Pagination.vue';
 import { ref, computed } from 'vue';
 
 interface User {
@@ -139,15 +140,7 @@ const breadcrumbs = [
                     <p class="text-gray-600 dark:text-gray-400">Kelola peminjaman dan pengembalian buku</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- Export buttons -->
-                    <a
-                        :href="exportUrl('csv')"
-                        class="inline-flex items-center gap-1.5 rounded-lg border border-green-600 bg-white px-3 py-2 text-sm font-medium text-green-700 transition-colors hover:bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:border-green-500 dark:hover:bg-green-900/20"
-                        title="Export Excel/CSV"
-                    >
-                        <FileSpreadsheet class="h-4 w-4" />
-                        Excel
-                    </a>
+                    <!-- Export button -->
                     <a
                         :href="exportUrl('pdf')"
                         target="_blank"
@@ -351,26 +344,7 @@ const breadcrumbs = [
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     Menampilkan {{ borrowings.data.length }} dari {{ borrowings.total }} transaksi
                 </p>
-                <div class="flex gap-1">
-                    <template v-for="link in borrowings.links" :key="link.label">
-                        <Link
-                            v-if="link.url"
-                            :href="link.url"
-                            :class="[
-                                'rounded px-3 py-1 text-sm',
-                                link.active
-                                    ? 'bg-amber-500 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
-                            ]"
-                            v-html="link.label"
-                        />
-                        <span
-                            v-else
-                            class="rounded px-3 py-1 text-sm text-gray-400"
-                            v-html="link.label"
-                        />
-                    </template>
-                </div>
+                <Pagination :links="borrowings.links" />
             </div>
         </div>
     </AppLayout>

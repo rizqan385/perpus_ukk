@@ -45,21 +45,24 @@ class FineController extends Controller
             ->where('denda', '>', 0)
             ->where('payment_status', 'paid')
             ->latest()
-            ->take(10)
-            ->get();
+            ->paginate(10);
 
-        $activeFinesTotal = $activeFines->sum(function(Borrowing $b) { return $b->calculateFine(); });
+        $activeFinesTotal = $activeFines->sum(function (Borrowing $b) { return $b->calculateFine(); });
         $totalUnpaid = $unpaidFines->sum('denda') + $activeFinesTotal;
         $totalPending = $pendingFines->sum('denda');
+        $totalPaidHistory = $member->borrowings()->where('payment_status', 'paid')->sum('denda');
 
         return Inertia::render('Siswa/Fines', [
-            'activeFines' => $activeFines,
-            'unpaidFines' => $unpaidFines,
+            'activeFines'  => $activeFines,
+            'unpaidFines'  => $unpaidFines,
             'pendingFines' => $pendingFines,
-            'paidFines' => $paidFines,
-            'totalUnpaid' => $totalUnpaid,
+            'paidFines'    => $paidFines,
+            'totalUnpaid'  => $totalUnpaid,
             'totalPending' => $totalPending,
-            'member' => $member,
+            'totalPaidHistory' => $totalPaidHistory,
+            'member'       => [
+                'no_anggota' => $member->no_anggota,
+            ],
         ]);
     }
 
@@ -68,7 +71,7 @@ class FineController extends Controller
      */
     public function pay(Borrowing $borrowing): RedirectResponse
     {
-        $user   = auth()->user();
+        $user = auth()->user();
         $member = $user->member;
 
         if (!$member || $borrowing->member_id !== $member->id) {

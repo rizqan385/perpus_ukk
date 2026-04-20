@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Download, ArrowLeft, IdCard } from 'lucide-vue-next';
+import { Download, ArrowLeft, IdCard, Printer } from 'lucide-vue-next';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
 
 interface Member {
@@ -33,12 +33,12 @@ const downloadPDF = async () => {
         format: [85.6, 54],
     });
 
-    // Background gradient simulation
-    doc.setFillColor(30, 64, 175);
+    // Background gradient simulation (Gold #E8A020 = 232, 160, 32)
+    doc.setFillColor(232, 160, 32);
     doc.rect(0, 0, 85.6, 54, 'F');
 
-    // Darker header bar
-    doc.setFillColor(15, 40, 130);
+    // Darker header bar (Dark Orange/Brown)
+    doc.setFillColor(146, 64, 14);
     doc.rect(0, 0, 85.6, 9, 'F');
 
     // Header text
@@ -69,7 +69,7 @@ const downloadPDF = async () => {
         }
     } else {
         doc.setFillColor(255, 255, 255);
-        doc.setFillColor(80, 120, 220);
+        doc.setFillColor(196, 120, 26);
         doc.roundedRect(4, 11, 18, 22, 2, 2, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(14);
@@ -86,12 +86,12 @@ const downloadPDF = async () => {
 
     doc.setFontSize(6);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(200, 210, 255);
+    doc.setTextColor(255, 240, 220);
     doc.text(props.member.no_anggota, infoX, 19);
 
     if (props.member.kelas) {
         doc.setFillColor(255, 255, 255, 0.2);
-        doc.setFillColor(50, 90, 200);
+        doc.setFillColor(196, 120, 26);
         doc.roundedRect(infoX, 21, 22, 4, 1, 1, 'F');
         doc.setFontSize(5);
         doc.setTextColor(255, 255, 255);
@@ -100,7 +100,7 @@ const downloadPDF = async () => {
 
     const jkLabel = props.member.jenis_kelamin === 'L' ? 'Laki-laki' : props.member.jenis_kelamin === 'P' ? 'Perempuan' : '';
     if (jkLabel) {
-        doc.setFillColor(50, 90, 200);
+        doc.setFillColor(196, 120, 26);
         doc.roundedRect(infoX + 24, 21, 18, 4, 1, 1, 'F');
         doc.setFontSize(5);
         doc.setTextColor(255, 255, 255);
@@ -108,17 +108,21 @@ const downloadPDF = async () => {
     }
 
     doc.setFontSize(5);
-    doc.setTextColor(180, 195, 255);
+    doc.setTextColor(255, 240, 220);
     doc.text(`Berlaku sejak: ${formatDate(props.member.created_at)}`, infoX, 28.5);
 
     // Footer bar
-    doc.setFillColor(10, 30, 100);
+    doc.setFillColor(146, 64, 14);
     doc.rect(0, 47, 85.6, 7, 'F');
     doc.setFontSize(5);
-    doc.setTextColor(180, 195, 255);
+    doc.setTextColor(150, 255, 150);
     doc.text(`Status: ${props.member.status === 'aktif' ? 'AKTIF' : 'NON-AKTIF'}`, 82, 51.5, { align: 'right' });
 
     doc.save(`kartu-${props.member.no_anggota}.pdf`);
+};
+
+const printCard = () => {
+    window.print();
 };
 
 const breadcrumbs = [
@@ -189,6 +193,14 @@ const breadcrumbs = [
                     <ArrowLeft class="h-4 w-4" />
                     Kembali
                 </Link>
+                <button
+                    @click="printCard"
+                    class="inline-flex items-center gap-2 rounded-lg border-2 px-5 py-2.5 text-sm font-bold transition-all hover:bg-gray-100 active:scale-95"
+                    style="border-color: #5C3D1E; color: #5C3D1E;"
+                >
+                    <Printer class="h-4 w-4" />
+                    Cetak Kartu
+                </button>
                 <button
                     @click="downloadPDF"
                     class="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
@@ -311,5 +323,87 @@ const breadcrumbs = [
     font-size: 9px;
     color: rgba(255,255,255,0.65);
     text-align: right;
+}
+
+@media print {
+    @page {
+        size: landscape;
+        margin: 5mm;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    nav, footer, .no-print, button, a, .max-w-xs {
+        display: none !important;
+    }
+
+    .card-front {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 140mm !important; /* Really large for 1 card print */
+        height: 85mm !important;
+        background: white !important;
+        border: 1px solid #000;
+        box-shadow: none !important;
+        color: black !important;
+        border-radius: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .card-header, .card-footer {
+        background: #f3f4f6 !important;
+        color: black !important;
+        border-bottom: 1px solid #000;
+        padding: 5mm !important;
+        font-size: 14pt !important;
+    }
+
+    .card-footer {
+        border-bottom: none;
+        border-top: 1px solid #000;
+    }
+
+    .card-body {
+        padding: 10mm !important;
+        gap: 10mm !important;
+    }
+
+    .card-photo {
+        width: 40mm !important;
+        height: 50mm !important;
+        border: 2px solid #000 !important;
+        background: white !important;
+    }
+
+    .card-name {
+        color: black !important;
+        font-size: 24pt !important;
+        margin-bottom: 3mm !important;
+    }
+
+    .card-no {
+        color: black !important;
+        font-size: 14pt !important;
+        margin-bottom: 5mm !important;
+    }
+
+    .card-pill {
+        color: black !important;
+        background: white !important;
+        border: 1px solid #000 !important;
+        font-size: 12pt !important;
+        padding: 1mm 5mm !important;
+    }
+
+    .card-tgl {
+        color: black !important;
+        font-size: 10pt !important;
+        margin-top: 5mm !important;
+    }
 }
 </style>

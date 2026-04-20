@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { BookOpen, ArrowLeftRight, Clock, AlertTriangle, CheckCircle, Calendar, ChevronRight, RotateCcw, Timer } from 'lucide-vue-next';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
+import Pagination from '@/components/Pagination.vue';
 import { ref } from 'vue';
 
 interface Book { id: number; judul: string; pengarang: string; }
@@ -18,12 +19,17 @@ interface Borrowing {
     book: Book;
 }
 
+interface PaginationData {
+    data: Borrowing[];
+    links: Array<{ url: string | null; label: string; active: boolean }>;
+}
+
 interface Member { no_anggota: string; status: string; }
 
 const props = defineProps<{
     activeBorrowings: Borrowing[];
     pendingReturns: Borrowing[];
-    returnHistory: Borrowing[];
+    returnHistory: PaginationData;
     member: Member;
 }>();
 
@@ -71,7 +77,6 @@ const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
 <template>
     <Head title="Kembalikan Buku — E-Perpustakaan" />
     <SiswaLayout>
-        <!-- ══ HERO HEADER ══ -->
         <section style="background: linear-gradient(135deg, #5C3D1E 0%, #3D2810 100%);" class="relative overflow-hidden py-12 px-6">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute right-0 top-0 h-48 w-48 rounded-full opacity-10" style="background: #E8A020;"></div>
@@ -84,7 +89,6 @@ const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
                 </div>
                 <h1 class="text-3xl font-bold text-white" style="font-family: Georgia, serif;">↩ Kembalikan Buku</h1>
                 <p class="mt-1 text-white opacity-70">Kelola pengembalian buku yang sedang kamu pinjam</p>
-                <!-- Quick stats -->
                 <div class="mt-6 flex gap-4 flex-wrap">
                     <div class="flex items-center gap-2 rounded-xl px-4 py-2" style="background: rgba(255,255,255,0.1);">
                         <BookOpen class="h-4 w-4 text-amber-300" />
@@ -213,6 +217,34 @@ const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
                             Menunggu Admin
                         </span>
                     </div>
+                </div>
+            </div>
+            <!-- ══ RETURN HISTORY ══ -->
+            <div v-if="returnHistory.data.length > 0" class="rounded-2xl border-2 bg-white overflow-hidden" style="border-color: #E2E8F0;">
+                <div class="px-6 py-4 border-b flex items-center gap-3" style="background: #F8FAFC;">
+                    <CheckCircle class="h-5 w-5 text-green-500" />
+                    <h2 class="font-bold" style="color: #1E293B;">Riwayat Pengembalian</h2>
+                </div>
+                <div class="divide-y">
+                    <div v-for="history in returnHistory.data" :key="history.id" class="p-5 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                                <BookOpen class="h-5 w-5 text-slate-500" />
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm" style="color: #334155;">{{ history.book.judul }}</p>
+                                <p class="text-xs text-slate-500">Dikembalikan pada: {{ formatDate(history.tanggal_dikembalikan || '') }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                           <span v-if="history.denda > 0" class="text-xs font-bold text-red-600">Denda: {{ formatCurrency(history.denda) }}</span>
+                           <span v-else class="text-xs font-bold text-green-600">Terima Kasih!</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pagination -->
+                <div v-if="returnHistory.data.length > 0" class="p-4 border-t flex justify-center bg-slate-50">
+                    <Pagination :links="returnHistory.links" />
                 </div>
             </div>
         </div>

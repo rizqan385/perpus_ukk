@@ -12,14 +12,12 @@ use Inertia\Response;
 
 class BookController extends Controller
 {
-    /**
-     * Display a listing of the books.
-     */
+ 
     public function index(Request $request): Response
     {
         $query = Book::query();
 
-        // Date filter
+
         if ($request->has('from_date') && $request->input('from_date')) {
             $query->whereDate('created_at', '>=', $request->input('from_date'));
         }

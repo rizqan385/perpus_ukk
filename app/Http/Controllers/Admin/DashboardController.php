@@ -16,29 +16,36 @@ class DashboardController extends Controller
      */
     public function index(): Response
     {
-        $stats = [
-            'total_books'        => Book::count(),
-            'total_members'      => Member::count(),
-            'active_borrowings'  => Borrowing::where('status', 'dipinjam')->count(),
-            'overdue_borrowings' => Borrowing::where('status', 'dipinjam')
-                ->where('tanggal_kembali', '<', now())
-                ->count(),
-            'total_borrowings'   => Borrowing::count(),
-        ];
-
-        // Anggota per kelas (null/kosong dikelompokkan sebagai "Lainnya")
+        // Members by Class
         $membersByClass = Member::selectRaw("COALESCE(NULLIF(kelas, ''), 'Lainnya') as kelas, COUNT(*) as total")
             ->groupBy('kelas')
             ->orderBy('kelas')
-            ->get()
-            ->map(fn($row) => [
-                'kelas' => $row->kelas,
-                'total' => $row->total,
-            ]);
+            ->get();
+
+        // Activity Data (Last 30 days)
+        $days = collect(range(29, 0))->map(fn($i) => now()->subDays($i)->format('Y-m-d'));
+        
+        $borrowingsData = Borrowing::selectRaw('DATE(tanggal_pinjam) as date, COUNT(*) as total')
+            ->where('tanggal_pinjam', '>=', now()->subDays(30))
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
+        $returnsData = Borrowing::selectRaw('DATE(tanggal_dikembalikan) as date, COUNT(*) as total')
+            ->where('tanggal_dikembalikan', '>=', now()->subDays(30))
+            ->whereNotNull('tanggal_dikembalikan')
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
+        $activityChart = $days->map(fn($date) => [
+            'date' => \Carbon\Carbon::parse($date)->translatedFormat('d M'),
+            'borrows' => $borrowingsData->get($date, 0),
+            'returns' => $returnsData->get($date, 0),
+        ]);
 
         return Inertia::render('Admin/Dashboard', [
             'stats'          => $stats,
             'membersByClass' => $membersByClass,
+            'activityChart'  => $activityChart,
         ]);
     }
 }

@@ -23,7 +23,7 @@ class LandingController extends Controller
             });
         }
 
-        $books = $query->latest()->get()->map(function (Book $book) use ($userId) {
+        $books = $query->latest()->paginate(12)->withQueryString()->through(function (Book $book) use ($userId) {
             return [
                 'id'           => $book->id,
                 'judul'        => $book->judul,
@@ -44,13 +44,12 @@ class LandingController extends Controller
             'total_genres'  => Book::distinct('penerbit')->count('penerbit'),
         ];
 
-        // Get borrowed books with their status for the logged-in student
         $borrowedBooksStatus = [];
         if ($userId) {
             $user = auth()->user();
             if ($user && $user->member) {
                 $borrowedBooksStatus = $user->member->borrowings()
-                    ->whereIn('status', ['dipinjam', 'menunggu_persetujuan', 'menunggu_pengembalian'])
+                    ->whereIn('status', ['dipinjam', 'menunggu_persetujuan', 'menunggu_pengembalian', 'terlambat'])
                     ->get(['book_id', 'status'])
                     ->pluck('status', 'book_id')
                     ->toArray();
@@ -79,7 +78,18 @@ class LandingController extends Controller
             });
         }
 
-        $books = $query->latest()->get()->map(function (Book $book) use ($userId) {
+        $status = $request->input('status', 'semua');
+        if ($status === 'tersedia') {
+            $query->where('stok', '>', 0);
+        } elseif ($status === 'dipinjam') {
+            $query->whereHas('borrowings', function($q) use ($userId) {
+                $q->whereHas('member', function($m) use ($userId) {
+                    $m->where('user_id', $userId);
+                })->whereIn('status', ['dipinjam', 'menunggu_persetujuan', 'menunggu_pengembalian', 'terlambat']);
+            });
+        }
+
+        $filteredBooks = $query->latest()->paginate(18)->withQueryString()->through(function (Book $book) use ($userId) {
             return [
                 'id'           => $book->id,
                 'judul'        => $book->judul,
@@ -99,7 +109,7 @@ class LandingController extends Controller
             $user = auth()->user();
             if ($user && $user->member) {
                 $borrowedBooksStatus = $user->member->borrowings()
-                    ->whereIn('status', ['dipinjam', 'menunggu_persetujuan', 'menunggu_pengembalian'])
+                    ->whereIn('status', ['dipinjam', 'menunggu_persetujuan', 'menunggu_pengembalian', 'terlambat'])
                     ->get(['book_id', 'status'])
                     ->pluck('status', 'book_id')
                     ->toArray();
@@ -107,8 +117,9 @@ class LandingController extends Controller
         }
 
         return Inertia::render('Siswa/Koleksi', [
-            'books'               => $books,
+            'books'               => $filteredBooks,
             'search'              => $search ?? '',
+            'status'              => $status,
             'borrowedBooksStatus' => $borrowedBooksStatus,
         ]);
     }
@@ -131,7 +142,6 @@ class LandingController extends Controller
                 'stok'        => $b->stok,
             ]);
 
-        // Check if the current user already borrowed this book (active)
         $alreadyBorrowed = false;
         $pendingBorrow   = false;
         if ($userId) {

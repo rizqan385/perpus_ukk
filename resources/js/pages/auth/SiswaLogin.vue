@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { BookOpen, Mail, Lock, Eye, EyeOff, BookMarked, Search, Bell } from 'lucide-vue-next';
+import { BookOpen, Mail, Lock, Eye, EyeOff, BookMarked, Search, Bell, Home } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 defineProps<{ status?: string; canResetPassword: boolean }>();
@@ -109,7 +109,13 @@ const submit = () => {
                 <span class="text-xl font-bold" style="color: #C4781A;">E-Perpustakaan</span>
             </div>
 
-            <div class="w-full max-w-md">
+            <div class="w-full max-w-md relative">
+                <!-- Back to Home -->
+                <a href="/" class="absolute -top-12 right-0 flex items-center gap-2 text-sm font-semibold transition-all hover:opacity-70" style="color: #C4781A;">
+                    <Home class="h-4 w-4" />
+                    Beranda
+                </a>
+
                 <h2 class="mb-1 text-3xl font-bold" style="color: #5C3D1E;">Selamat Datang!</h2>
                 <p class="mb-8 text-sm" style="color: #9A7050;">Masuk ke akun E-Perpustakaan Anda</p>
 
@@ -164,6 +170,9 @@ const submit = () => {
                             <input v-model="form.remember" type="checkbox" class="rounded" style="accent-color: #E8A020;" />
                             Ingat saya
                         </label>
+                        <a v-if="canResetPassword" href="/siswa/lupa-password" class="text-sm font-semibold hover:underline" style="color: #C4781A;">
+                            Lupa password?
+                        </a>
                     </div>
 
                     <!-- Submit -->

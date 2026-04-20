@@ -12,6 +12,7 @@ import {
     Check,
 } from 'lucide-vue-next';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
+import Pagination from '@/components/Pagination.vue';
 import { ref, computed, watch } from 'vue';
 
 interface Book {
@@ -27,61 +28,65 @@ interface Book {
     available: boolean;
 }
 
+interface PaginationData {
+    data: Book[];
+    links: Array<{ url: string | null; label: string; active: boolean }>;
+    total: number;
+    current_page: number;
+    last_page: number;
+}
+
 const props = defineProps<{
-    books: Book[];
+    books: PaginationData;
     search: string;
+    status: string;
     borrowedBooksStatus: Record<number, string>;
 }>();
 
 const page = usePage();
 const user = computed(() => (page.props as any).auth?.user ?? null);
 
-// State
 const searchQuery = ref(props.search);
-const activeTab = ref('semua');
+const activeTab = ref(props.status || 'semua');
 
-// Tabs
 const tabs = [
     { id: 'semua', label: 'Semua' },
     { id: 'tersedia', label: 'Tersedia' },
     { id: 'dipinjam', label: 'Dipinjam Saya' },
 ];
 
-// Computed books
-const filteredBooks = computed(() => {
-    let result = props.books;
-    if (activeTab.value === 'tersedia') {
-        result = result.filter((b) => b.available);
-    } else if (activeTab.value === 'dipinjam') {
-        result = result.filter((b) =>
-            Object.keys(props.borrowedBooksStatus).map(Number).includes(b.id),
-        );
-    }
-    return result;
-});
-
 const doSearch = () => {
     router.get(
         '/koleksi-buku',
-        { search: searchQuery.value },
-        { preserveState: false },
+        { 
+            search: searchQuery.value,
+            status: activeTab.value
+        },
+        { 
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        },
     );
 };
 
-// Search debouncing
+watch(activeTab, (newVal) => {
+    doSearch();
+});
+
 let searchTimeout: any = null;
 watch(searchQuery, (newVal) => {
+    if (newVal === '') {
+        doSearch();
+        return;
+    }
+    
     if (searchTimeout) clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        router.get(
-            '/koleksi-buku',
-            { search: newVal },
-            { preserveState: true, preserveScroll: true, replace: true },
-        );
+        doSearch();
     }, 500);
 });
 
-// Actions
 const toggleFavorite = (book: Book) => {
     if (!user.value) {
         router.visit('/siswa/masuk');
@@ -123,7 +128,6 @@ const requestReturn = () => {
 const coverUrl = (book: Book) =>
     book.cover_image ? `/storage/${book.cover_image}` : null;
 
-// Modal
 const showBookModal = ref(false);
 const selectedBook = ref<Book | null>(null);
 
@@ -192,7 +196,7 @@ const closeBookModal = () => {
                             Koleksi Buku
                         </h1>
                         <p class="text-lg" style="color: #d4a060">
-                            {{ books.length }} judul buku tersedia untuk kamu
+                            {{ books.total }} judul buku tersedia untuk kamu
                         </p>
                     </div>
 
@@ -207,11 +211,10 @@ const closeBookModal = () => {
                                 v-model="searchQuery"
                                 type="text"
                                 placeholder="Cari judul, pengarang, penerbit..."
-                                class="w-full rounded-2xl border-none py-3.5 pr-4 pl-12 text-sm font-medium placeholder-gray-400 transition-all outline-none focus:ring-4"
+                                class="w-full rounded-2xl border-none py-3.5 pr-4 pl-12 text-sm font-medium placeholder-gray-400 transition-all outline-none focus:ring-4 focus:ring-[#e8a020]/20"
                                 style="
                                     background: #fff8f0;
                                     color: #5c3d1e;
-                                    ring-color: rgba(232, 160, 32, 0.3);
                                 "
                             />
                         </div>
@@ -258,7 +261,7 @@ const closeBookModal = () => {
                     class="ml-auto text-sm font-semibold"
                     style="color: #9a7050"
                 >
-                    {{ filteredBooks.length }} buku
+                    {{ books.total }} buku
                 </div>
             </div>
         </div>
@@ -268,7 +271,7 @@ const closeBookModal = () => {
             <div class="mx-auto max-w-7xl px-6">
                 <!-- Empty State -->
                 <div
-                    v-if="filteredBooks.length === 0"
+                    v-if="books.data.length === 0"
                     class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed py-24 text-center"
                     style="border-color: #f0d6a8; background: white"
                 >
@@ -282,7 +285,7 @@ const closeBookModal = () => {
                         Tidak ada buku ditemukan
                     </h3>
                     <p class="mt-2" style="color: #9a7050">
-                        Coba dengan kata kunci pencarian yang lain.
+                        Coba dengan kata kunci pencarian atau filter yang lain.
                     </p>
                 </div>
 
@@ -292,7 +295,7 @@ const closeBookModal = () => {
                     class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
                 >
                     <div
-                        v-for="book in filteredBooks"
+                        v-for="book in books.data"
                         :key="book.id"
                         class="book-card-wrapper group cursor-pointer"
                         @click="openBookModal(book)"
@@ -446,6 +449,11 @@ const closeBookModal = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Pagination -->
+                <div v-if="books.last_page > 1" class="mt-16 flex justify-center">
+                    <Pagination :links="books.links" />
                 </div>
             </div>
         </main>

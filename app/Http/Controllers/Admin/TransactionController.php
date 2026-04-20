@@ -15,9 +15,7 @@ use Inertia\Response;
 
 class TransactionController extends Controller
 {
-    /**
-     * Display a listing of the borrowing transactions.
-     */
+   
     public function index(Request $request): Response
     {
         $query = Borrowing::with(['member.user', 'book']);
@@ -56,9 +54,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Export transactions as CSV or printable HTML.
-     */
+   
     public function export(Request $request): Response|\Symfony\Component\HttpFoundation\StreamedResponse
     {
         $query = Borrowing::with(['member.user', 'book'])->latest();
@@ -83,7 +79,7 @@ class TransactionController extends Controller
             });
         }
 
-        // Filter berdasarkan periode waktu
+        
         $filterType = $request->input('filter_type');
         if ($filterType === 'daily' && $request->input('date')) {
             $query->whereDate('tanggal_pinjam', $request->input('date'));
@@ -107,7 +103,6 @@ class TransactionController extends Controller
 
             $callback = function () use ($data) {
                 $file = fopen('php://output', 'w');
-                // BOM for Excel UTF-8
                 fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
                 fputcsv($file, ['No', 'Nama Anggota', 'No. Anggota', 'Judul Buku', 'Tgl Pinjam', 'Tgl Kembali', 'Tgl Dikembalikan', 'Status', 'Denda']);
 
@@ -130,7 +125,7 @@ class TransactionController extends Controller
             return response()->stream($callback, 200, $headers);
         }
 
-        // PDF: render Inertia print page
+    
         $filterLabel = 'Semua Periode';
         if ($filterType === 'daily' && $request->input('date')) {
             $filterLabel = 'Harian: ' . Carbon::parse($request->input('date'))->translatedFormat('d F Y');
@@ -147,9 +142,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new borrowing.
-     */
+   
     public function create(): Response
     {
         $members = Member::with('user')
@@ -164,9 +157,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created borrowing in storage.
-     */
+  
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -186,7 +177,7 @@ class TransactionController extends Controller
             return back()->withErrors(['member_id' => 'Anggota tidak aktif.']);
         }
 
-        // Block if member has unpaid fines
+    
         $unpaidFines = $member->borrowings()->where('denda', '>', 0)->whereNull('payment_status')->sum('denda');
         if ($unpaidFines > 0) {
             return back()->withErrors(['member_id' => 'Anggota memiliki denda belum lunas sebesar Rp ' . number_format($unpaidFines, 0, ',', '.') . '. Harap lunasi terlebih dahulu.']);
@@ -199,12 +190,8 @@ class TransactionController extends Controller
             'tanggal_kembali' => $validated['tanggal_kembali'],
             'status' => 'dipinjam',
         ]);
-
-        // Kurangi stok buku
-        // Kurangi stok buku
         $book->decrement('stok');
 
-        // Kirim notif WA ke anggota
         $member->load('user');
         $phoneNumber = $member->telepon ?? $member->user->phone;
 
@@ -224,9 +211,7 @@ class TransactionController extends Controller
             ->with('success', 'Transaksi peminjaman berhasil dibuat.');
     }
 
-    /**
-     * Display the specified borrowing.
-     */
+    
     public function show(Borrowing $transaction): Response
     {
         $transaction->load(['member.user', 'book']);
@@ -236,9 +221,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Return a book.
-     */
+   
     public function returnBook(Borrowing $transaction): RedirectResponse
     {
         if ($transaction->status !== 'dipinjam') {
@@ -256,9 +239,6 @@ class TransactionController extends Controller
             ->with('success', $message);
     }
 
-    /**
-     * Approve a return request from student.
-     */
     public function approveReturn(Borrowing $transaction): RedirectResponse
     {
         if ($transaction->status !== 'menunggu_pengembalian') {
@@ -271,7 +251,7 @@ if ($transaction->denda > 0) {
     $message .= ' Denda keterlambatan: Rp ' . number_format($transaction->denda, 0, ',', '.');
 }
 
-// Kirim notif WA ke anggota
+
 $transaction->load('member.user', 'book');
 $phoneNumber = $transaction->member->telepon ?? $transaction->member->user->phone;
 
@@ -294,9 +274,7 @@ return redirect()->route('admin.transactions.index')
     ->with('success', $message);
     }
 
-    /**
-     * Remove the specified borrowing from storage.
-     */
+ 
     public function destroy(Borrowing $transaction): RedirectResponse
     {
         $transaction->delete();

@@ -42,6 +42,27 @@ Route::get('/siswa/daftar', function () {
 })->middleware('guest')->name('siswa.register.page');
 Route::post('/siswa/daftar', [SiswaAuthController::class, 'register'])->middleware('guest')->name('siswa.register.submit');
 
+Route::get('/siswa/verifikasi-otp', function () {
+    if (!session()->has('registration_data')) {
+        return redirect()->route('siswa.register.page')->withErrors(['error' => 'Sesi tidak valid, silakan daftar ulang.']);
+    }
+    return Inertia::render('auth/SiswaOtp', [
+        'phone' => session('registration_data.phone'),
+        'email' => session('registration_data.email'),
+        'success' => session('success'),
+        'errors' => session('errors') ? session('errors')->getBag('default')->getMessages() : (object) [],
+    ]);
+})->middleware('guest')->name('siswa.otp.page');
+Route::post('/siswa/verifikasi-otp', [SiswaAuthController::class, 'verifyOtp'])->middleware('guest')->name('siswa.otp.submit');
+Route::post('/siswa/resend-otp', [SiswaAuthController::class, 'resendOtp'])->middleware('guest')->name('siswa.otp.resend');
+Route::post('/siswa/resend-otp-email', [SiswaAuthController::class, 'resendOtpEmail'])->middleware('guest')->name('siswa.otp.resend.email');
+
+Route::get('/siswa/lupa-password', function () {
+    return Inertia::render('auth/SiswaForgotPassword', [
+        'status' => session('status'),
+    ]);
+})->middleware('guest')->name('siswa.password.request');
+
 // ─── Legacy redirect ──────────────────────────────────────────────
 Route::get('dashboard', function () {
     if (auth()->user()->isAdmin()) {
@@ -120,6 +141,11 @@ Route::prefix('siswa')
         // Member Card
         Route::get('kartu', [CardController::class, 'show'])->name('card');
 
+        // Profile
+        Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::post('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profile.update');
+        Route::get('success-update', [\App\Http\Controllers\Siswa\ProfileController::class, 'success'])->name('profile.success');
+
         // Midtrans Payment
         Route::post('payment/{borrowing}/token', [\App\Http\Controllers\Siswa\PaymentController::class, 'getSnapToken'])->name('payment.token');
         Route::get('payment/{borrowing}/success', [\App\Http\Controllers\Siswa\PaymentController::class, 'successPayment'])->name('payment.success');
@@ -127,18 +153,19 @@ Route::prefix('siswa')
 
 Route::post('/payment/midtrans/notification', [\App\Http\Controllers\Siswa\PaymentController::class, 'handleNotification'])->name('payment.notification');
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
 
 // ─── Route Rahasia Demo Denda (Hanya untuk testing Railway) ────────
 Route::get('/tanam-denda-rahasia-ukom-2024', function () {
     $user = \App\Models\User::where('role', 'siswa')->first();
-    
+
     if (!$user || !$user->member) {
         return "Gagal: User siswa belum ada atau belum daftar member.";
     }
 
     $book = \App\Models\Book::first();
-    if (!$book) return "Gagal: Belum ada data buku.";
+    if (!$book)
+        return "Gagal: Belum ada data buku.";
 
     \App\Models\Borrowing::create([
         'member_id' => $user->member->id,
