@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Users, Plus, Search, Edit, Trash2, Eye, AlertTriangle, Printer, CreditCard } from 'lucide-vue-next';
+import { Plus, Search, Edit, Trash2, Eye, AlertTriangle, CreditCard } from 'lucide-vue-next';
 import { ref } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import AppLayout from '@/layouts/AppLayout.vue';

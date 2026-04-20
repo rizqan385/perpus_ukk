@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Heart, BookOpen, ArrowLeft, Star, Users, CheckCircle, AlertTriangle } from 'lucide-vue-next';
+import { Heart, BookOpen, ArrowLeft, Star, CheckCircle, AlertTriangle } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
 

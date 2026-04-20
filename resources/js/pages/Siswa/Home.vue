@@ -10,7 +10,6 @@ import {
     X,
     Clock,
     Calendar,
-    CheckCircle,
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';

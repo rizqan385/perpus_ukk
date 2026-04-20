@@ -9,7 +9,6 @@ import {
     Star,
     X,
     ChevronRight,
-    Check,
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 import Pagination from '@/components/Pagination.vue';
@@ -70,7 +69,7 @@ const doSearch = () => {
     );
 };
 
-watch(activeTab, (newVal) => {
+watch(activeTab, () => {
     doSearch();
 });
 

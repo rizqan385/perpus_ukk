@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { BookOpen, Mail, Lock, Eye, EyeOff, BookMarked, Search, Bell, Home } from 'lucide-vue-next';
+import { BookOpen, Mail, Lock, Eye, EyeOff, Home } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 defineProps<{ status?: string; canResetPassword: boolean }>();

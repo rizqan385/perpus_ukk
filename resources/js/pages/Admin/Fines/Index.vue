@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertTriangle, Search, Check, Clock, DollarSign, MessageCircle } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { AlertTriangle, Search, Check, DollarSign, MessageCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -89,13 +89,7 @@ const remindFine = (borrowing: Borrowing) => {
     }
 };
 
-const getDaysLate = (borrowing: Borrowing) => {
-    const today = new Date();
-    const returnDate = new Date(borrowing.tanggal_kembali);
-    const diffTime = today.getTime() - returnDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
-};
+
 
 const breadcrumbs = [
     { title: 'Admin', href: '/admin' },

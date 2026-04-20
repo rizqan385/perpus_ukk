@@ -32,7 +32,7 @@ class BorrowingTest extends TestCase
     }
 
     /** @test */
-    public function stock_decreases_when_book_is_borrowed_by_student()
+    public function stock_decreases_when_book_is_borrowed_and_approved()
     {
         // Create a student user with member
         $user = User::create([
@@ -67,10 +67,18 @@ class BorrowingTest extends TestCase
             ->post('/siswa/borrow', ['book_id' => $book->id]);
 
         // Refresh the book from database
-        $book->refresh();
+        $this->assertEquals(5, $book->stok);
 
-        // Assert stock decreased by 1
-        $this->assertEquals($initialStock - 1, $book->stok);
+        $borrowing = Borrowing::first();
+        $this->assertEquals('menunggu_persetujuan', $borrowing->status);
+
+        // 2. Admin approves
+        $admin = User::where('role', 'admin')->first();
+        $this->actingAs($admin)
+            ->post("/admin/borrow-approvals/{$borrowing->id}/approve");
+
+        $book->refresh();
+        $this->assertEquals(4, $book->stok);
     }
 
     /** @test */
@@ -165,8 +173,8 @@ class BorrowingTest extends TestCase
         $borrowing->returnBook();
 
         // Assert fine is calculated (3 days * Rp 1000 = Rp 3000)
-        $this->assertEquals(-3000, $borrowing->denda);
-        $this->assertEquals('dikembalikan', $borrowing->status);
+        $this->assertEquals(3000, $borrowing->denda);
+        $this->assertEquals('terlambat', $borrowing->status);
     }
 
     /** @test */

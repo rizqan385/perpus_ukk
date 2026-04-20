@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { BookOpen, ArrowLeftRight, Clock, AlertTriangle, CheckCircle, Calendar, ChevronRight, RotateCcw, Timer } from 'lucide-vue-next';
+import { BookOpen, Clock, AlertTriangle, CheckCircle, Calendar, ChevronRight, RotateCcw, Timer } from 'lucide-vue-next';
 import { ref } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
@@ -26,7 +26,7 @@ interface PaginationData {
 
 interface Member { no_anggota: string; status: string; }
 
-const props = defineProps<{
+defineProps<{
     activeBorrowings: Borrowing[];
     pendingReturns: Borrowing[];
     returnHistory: PaginationData;

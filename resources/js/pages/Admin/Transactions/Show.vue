@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Users, BookOpen, Calendar, Clock, AlertTriangle, RotateCcw } from 'lucide-vue-next';
+import { ArrowLeft, Users, BookOpen, Clock, AlertTriangle, RotateCcw } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 interface User {

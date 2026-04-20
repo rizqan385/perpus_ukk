@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { Home, Library, BookOpen, Heart, User, LogIn, UserPlus, LayoutDashboard, LogOut, BookMarked, ArrowLeftRight, DollarSign, CreditCard, Menu, X } from 'lucide-vue-next';
+import { Home, Library, BookOpen, Heart, User, LogIn, UserPlus, LayoutDashboard, LogOut, ArrowLeftRight, DollarSign, CreditCard, Menu, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const page = usePage();
@@ -8,9 +8,7 @@ const user = computed(() => (page.props as any).auth?.user ?? null);
 const isOpen = ref(false);
 const mobileMenuOpen = ref(false);
 
-const logout = () => {
-    (window as any).location.href = '/logout'; // Fortify handles POST, so use Link approach
-};
+
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Printer, Search, Filter, CreditCard, ArrowLeft, Users, CheckSquare, Square, X } from 'lucide-vue-next';
+import { Printer, Search, Filter, ArrowLeft, Users, CheckSquare, Square, X } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -42,7 +42,11 @@ const toggleAll = () => {
 
 const toggleMember = (id: number) => {
     const s = new Set(selectedIds.value);
-    s.has(id) ? s.delete(id) : s.add(id);
+    if (s.has(id)) {
+        s.delete(id);
+    } else {
+        s.add(id);
+    }
     selectedIds.value = s;
 };
 

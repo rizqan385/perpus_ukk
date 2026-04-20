@@ -125,10 +125,7 @@ const printCard = () => {
     window.print();
 };
 
-const breadcrumbs = [
-    { title: 'Dashboard Siswa', href: '/siswa' },
-    { title: 'Kartu Anggota', href: '/siswa/kartu' },
-];
+
 </script>
 
 <template>

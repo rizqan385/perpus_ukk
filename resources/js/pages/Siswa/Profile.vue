@@ -9,7 +9,6 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const user = computed(() => (page.props as any).auth?.user ?? null);
 const flash = computed(() => (page.props as any).flash ?? {});
 
 const goBack = () => {

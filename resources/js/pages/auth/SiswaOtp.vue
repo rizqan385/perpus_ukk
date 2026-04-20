@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm, router } from '@inertiajs/vue3';
-import { BookOpen, KeyRound, ArrowRight, MessageSquareCode } from 'lucide-vue-next';
+import { BookOpen, ArrowRight, MessageSquareCode } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 
 const props = defineProps<{ 

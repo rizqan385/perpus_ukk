@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { UserPlus, MapPin, Phone, GraduationCap, Camera, ChevronRight, X, User } from 'lucide-vue-next';
+import { UserPlus, MapPin, GraduationCap, Camera, ChevronRight, X, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
 

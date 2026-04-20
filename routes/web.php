@@ -68,7 +68,7 @@ Route::get('dashboard', function () {
     if (auth()->user()->isAdmin()) {
         return redirect()->route('admin.dashboard');
     }
-    return redirect()->route('home');
+    return redirect()->route('siswa.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // ─── Admin Routes ─────────────────────────────────────────────────

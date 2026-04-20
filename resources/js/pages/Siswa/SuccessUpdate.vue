@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { CheckCircle, ArrowRight, Home, LayoutDashboard, User } from 'lucide-vue-next';
+import { CheckCircle, Home, LayoutDashboard, User } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import SiswaLayout from '@/layouts/SiswaLayout.vue';
 

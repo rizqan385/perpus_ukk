@@ -1,14 +1,14 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import borrow from './borrow'
+import favoritesC40993 from './favorites'
+import finesB0faef from './fines'
 import login from './login'
-import register702019 from './register'
 import otp from './otp'
 import password from './password'
-import borrow from './borrow'
-import returns4b8e07 from './returns'
-import finesB0faef from './fines'
-import favoritesC40993 from './favorites'
-import profile from './profile'
 import payment from './payment'
+import profile from './profile'
+import register702019 from './register'
+import returns4b8e07 from './returns'
 /**
 * @see \App\Http\Controllers\Siswa\DashboardController::dashboard
  * @see app/Http/Controllers/Siswa/DashboardController.php:15
