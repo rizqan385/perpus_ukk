@@ -37,8 +37,7 @@ class ReturnController extends Controller
             ->with('book')
             ->whereIn('status', ['dikembalikan', 'terlambat'])
             ->latest()
-            ->take(10)
-            ->get();
+            ->paginate(10);
 
         return Inertia::render('Siswa/Returns', [
             'activeBorrowings' => $activeBorrowings,
