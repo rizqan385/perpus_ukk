@@ -8,7 +8,6 @@ const props = defineProps<{
     success?: string;
     phone: string;
     email: string;
-    debug_otp?: string;
     errors?: Record<string, string[] | string>;
 }>();
 
@@ -93,12 +92,7 @@ const getError = (field: string) => {
                 </p>
             </div>
             
-            <!-- Debug Info (Only shows if APP_DEBUG=true) -->
-            <div v-if="debug_otp" class="mb-6 rounded-xl border-2 border-dashed border-orange-300 bg-orange-50 p-4 text-center">
-                <p class="text-xs font-bold uppercase tracking-widest text-orange-600">Debug Mode</p>
-                <p class="mt-1 text-sm text-orange-800">Kode OTP Anda: <span class="font-mono text-lg font-black">{{ debug_otp }}</span></p>
-                <p class="text-[10px] text-orange-500 italic mt-1">(Teks ini hanya muncul saat APP_DEBUG aktif)</p>
-            </div>
+
 
             <!-- Messages -->
             <div v-if="success" class="mb-6 rounded-xl p-4 text-sm shadow-sm" style="background: #D1FAE5; color: #166534; border: 1px solid #A7F3D0;">
