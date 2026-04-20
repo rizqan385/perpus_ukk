@@ -141,7 +141,7 @@ const getError = (field: string) => {
                         Belum menerima kode OTP? <br/>
                         <template v-if="canResend">
                             <div class="mt-3 flex items-center justify-center gap-4">
-                                <button @click="resendOtp" type="button" :disabled="isResendingWa || isResendingEmail" class="text-sm font-bold transition hover:underline disabled:opacity-50" style="color: #25D366;">
+                                <button @click="resendOtp" type="button" :disabled="isResendingWa" class="text-sm font-bold transition hover:underline disabled:opacity-50" style="color: #25D366;">
                                     {{ isResendingWa ? 'Mengirim...' : 'Kirim Ulang OTP' }}
                                 </button>
                             </div>
