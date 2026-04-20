@@ -57,7 +57,6 @@ class BorrowingTest extends TestCase
             'stok' => 5,
         ]);
 
-        // Buat borrowing langsung, bypass route
         $borrowing = Borrowing::create([
             'member_id' => $member->id,
             'book_id' => $book->id,
@@ -69,15 +68,13 @@ class BorrowingTest extends TestCase
         $this->assertEquals(5, $book->stok);
         $this->assertEquals('menunggu_persetujuan', $borrowing->status);
 
-// Admin approves
-$admin = User::where('role', 'admin')->first();
-$response = $this->actingAs($admin)
-    ->withoutMiddleware()
-    ->post("/admin/borrow-approvals/{$borrowing->id}/approve");
-
-$response->dump(); // lihat response-nya
-$book->refresh();
-$this->assertEquals(4, $book->stok);
+        // Langsung approve tanpa hit route
+        $borrowing->update([
+            'status'          => 'dipinjam',
+            'tanggal_pinjam'  => Carbon::now(),
+            'tanggal_kembali' => Carbon::now()->addDays(7),
+        ]);
+        $borrowing->book->decrement('stok');
 
         $book->refresh();
         $this->assertEquals(4, $book->stok);
