@@ -71,9 +71,13 @@ class BorrowingTest extends TestCase
 
 // Admin approves
 $admin = User::where('role', 'admin')->first();
-$this->actingAs($admin)
+$response = $this->actingAs($admin)
     ->withoutMiddleware()
     ->post("/admin/borrow-approvals/{$borrowing->id}/approve");
+
+$response->dump(); // lihat response-nya
+$book->refresh();
+$this->assertEquals(4, $book->stok);
 
         $book->refresh();
         $this->assertEquals(4, $book->stok);
