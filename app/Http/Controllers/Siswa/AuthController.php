@@ -47,7 +47,7 @@ class AuthController extends Controller
         // Generate 6 digit OTP
         $otpCode = (string) random_int(100000, 999999);
 
-        // Store registration data in session
+        // 1. Store registration data in session
         $request->session()->put('registration_data', [
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -57,17 +57,39 @@ class AuthController extends Controller
         $request->session()->put('registration_otp', $otpCode);
         $request->session()->put('registration_otp_expires', now()->addMinutes(10));
 
-        // Send OTP via Email initially
+        // 2. Try to send notifications (WhatsApp & Email)
+        // Wrapped in try-catch so it doesn't "stuck" if API/SMTP is slow/down
+        $waSent = false;
+        $emailSent = false;
+
         try {
-            Mail::raw("Halo {$validated['name']}! 👋\n\nKode OTP pendaftaran Anda di E-Perpustakaan adalah:\n\n{$otpCode}\n\nKode ini berlaku selama 10 menit. Jangan berikan kode ini kepada siapapun.", function ($message) use ($validated) {
-                $message->to($validated['email'])
-                    ->subject('Kode OTP Pendaftaran E-Perpustakaan');
+            // WhatsApp (Fonnte)
+            if (config('services.fonnte.token')) {
+                $fonnte = new FonnteService();
+                $waMessage = "Halo *{$validated['name']}*! 👋\n\nKode OTP pendaftaran Anda adalah: *{$otpCode}*";
+                $waSent = $fonnte->send($validated['phone'], $waMessage);
+            }
+
+            // Email
+            Mail::raw("Halo {$validated['name']}! 👋\n\nKode OTP Anda adalah: {$otpCode}", function ($message) use ($validated) {
+                $message->to($validated['email'])->subject('OTP E-Perpustakaan');
             });
-            return redirect()->route('siswa.otp.page')->with('success', 'Kode OTP telah dikirim ke Alamat Email Anda.');
+            $emailSent = true;
+
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('SMTP ERROR DETAIL: ' . $e->getMessage());
-            return back()->withErrors(['email' => 'Gagal mengirim email OTP. Pastikan email valid atau hubungi admin.']);
+            \Illuminate\Support\Facades\Log::error('OTP SEND ERROR: ' . $e->getMessage());
         }
+
+        // 3. Always redirect to OTP page regardless of notification success
+        // User can still see OTP in Debug Mode if enabled
+        $statusMsg = 'Proses pendaftaran berhasil. ';
+        if ($waSent || $emailSent) {
+            $statusMsg .= 'Kode OTP telah dikirim.';
+        } else {
+            $statusMsg .= 'Silakan cek OTP di bawah (Debug Mode) atau hubungi admin.';
+        }
+
+        return redirect()->route('siswa.otp.page')->with('success', $statusMsg);
     }
 
     public function verifyOtp(Request $request)
