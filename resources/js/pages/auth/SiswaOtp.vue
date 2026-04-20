@@ -16,12 +16,7 @@ const form = useForm({
     otp: '',
 });
 
-const maskedEmail = computed(() => {
-    if (!props.email) return '';
-    const [name, domain] = props.email.split('@');
-    if (!name || !domain) return props.email;
-    return `${name.substring(0, 3)}***@${domain}`;
-});
+
 
 // Resend OTP countdown logic
 const countdown = ref(60);
@@ -54,7 +49,6 @@ const submitOtp = () => {
 };
 
 const isResendingWa = ref(false);
-const isResendingEmail = ref(false);
 
 const resendOtp = () => {
     isResendingWa.value = true;
@@ -69,18 +63,7 @@ const resendOtp = () => {
     });
 };
 
-const resendOtpEmail = () => {
-    isResendingEmail.value = true;
-    router.post('/siswa/resend-otp-email', {}, {
-        preserveScroll: true,
-        onSuccess: () => {
-            startTimer();
-        },
-        onFinish: () => {
-            isResendingEmail.value = false;
-        }
-    });
-};
+
 
 const getError = (field: string) => {
     const errs = form.errors as Record<string, string>;
