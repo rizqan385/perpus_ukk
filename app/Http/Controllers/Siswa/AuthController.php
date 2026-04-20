@@ -44,50 +44,53 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        \Log::info('Registration started for: ' . $validated['email']);
+
         // Generate 6 digit OTP
         $otpCode = (string) random_int(100000, 999999);
+        \Log::info('OTP Generated');
 
         // 1. Store registration data in session
-        $request->session()->put('registration_data', [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'password' => Hash::make($validated['password']),
-        ]);
-        $request->session()->put('registration_otp', $otpCode);
-        $request->session()->put('registration_otp_expires', now()->addMinutes(10));
+        try {
+            $request->session()->put('registration_data', [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+            ]);
+            $request->session()->put('registration_otp', $otpCode);
+            $request->session()->put('registration_otp_expires', now()->addMinutes(10));
+            \Log::info('Session data stored');
+        } catch (\Exception $e) {
+            \Log::error('Session Error: ' . $e->getMessage());
+        }
 
-        // 2. Try to send notifications (WhatsApp & Email)
-        // Wrapped in try-catch so it doesn't "stuck" if API/SMTP is slow/down
+        // 2. Try to send notifications (WhatsApp Priority)
         $waSent = false;
-        $emailSent = false;
 
         try {
-            // WhatsApp (Fonnte)
+            // Priority: WhatsApp (Fonnte)
             if (config('services.fonnte.token')) {
                 $fonnte = new FonnteService();
                 $waMessage = "Halo *{$validated['name']}*! 👋\n\nKode OTP pendaftaran Anda adalah: *{$otpCode}*";
                 $waSent = $fonnte->send($validated['phone'], $waMessage);
             }
 
-            // Email
-            Mail::raw("Halo {$validated['name']}! 👋\n\nKode OTP Anda adalah: {$otpCode}", function ($message) use ($validated) {
-                $message->to($validated['email'])->subject('OTP E-Perpustakaan');
-            });
-            $emailSent = true;
+            // Secondary: Email (Try but don't block)
+            if (config('mail.mailer') !== 'log') {
+                Mail::raw("Halo {$validated['name']}! 👋\n\nKode OTP Anda adalah: {$otpCode}", function ($message) use ($validated) {
+                    $message->to($validated['email'])->subject('OTP E-Perpustakaan');
+                });
+            }
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('OTP SEND ERROR: ' . $e->getMessage());
+            \Log::error('OTP SEND ERROR: ' . $e->getMessage());
         }
 
-        // 3. Always redirect to OTP page regardless of notification success
-        // User can still see OTP in Debug Mode if enabled
-        $statusMsg = 'Proses pendaftaran berhasil. ';
-        if ($waSent || $emailSent) {
-            $statusMsg .= 'Kode OTP telah dikirim.';
-        } else {
-            $statusMsg .= 'Silakan cek OTP di bawah (Debug Mode) atau hubungi admin.';
-        }
+        // 3. Redirect to OTP page
+        $statusMsg = $waSent 
+            ? 'Kode OTP telah dikirim melalui WhatsApp ke nomor ' . $validated['phone']
+            : 'Proses pendaftaran berhasil. Cek nomor WhatsApp Anda untuk kode OTP.';
 
         return redirect()->route('siswa.otp.page')->with('success', $statusMsg);
     }

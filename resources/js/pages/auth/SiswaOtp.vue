@@ -103,10 +103,10 @@ const getError = (field: string) => {
                      style="background: linear-gradient(135deg, #E8A020, #C4781A);">
                     <MessageSquareCode class="h-8 w-8 text-white" />
                 </div>
-                <h2 class="text-3xl font-bold" style="color: #5C3D1E;">Verifikasi Email</h2>
+                <h2 class="text-3xl font-bold" style="color: #5C3D1E;">Verifikasi WhatsApp</h2>
                 <p class="mt-3 text-sm" style="color: #9A7050;">
-                    Kami telah mengirimkan 6 digit kode OTP ke Alamat Email 
-                    <strong class="font-bold text-orange-700">{{ maskedEmail }}</strong>.
+                    Kami telah mengirimkan 6 digit kode OTP ke nomor WhatsApp 
+                    <strong class="font-bold text-orange-700">{{ phone }}</strong>.
                 </p>
             </div>
             
@@ -165,11 +165,7 @@ const getError = (field: string) => {
                         <template v-if="canResend">
                             <div class="mt-3 flex items-center justify-center gap-4">
                                 <button @click="resendOtp" type="button" :disabled="isResendingWa || isResendingEmail" class="text-sm font-bold transition hover:underline disabled:opacity-50" style="color: #25D366;">
-                                    {{ isResendingWa ? 'Mengirim...' : 'Kirim Ulang (WhatsApp)' }}
-                                </button>
-                                <span class="text-xs opacity-50">atau</span>
-                                <button @click="resendOtpEmail" type="button" :disabled="isResendingWa || isResendingEmail" class="text-sm font-bold transition hover:underline disabled:opacity-50" style="color: #D44638;">
-                                    {{ isResendingEmail ? 'Mengirim...' : 'Kirim via Email' }}
+                                    {{ isResendingWa ? 'Mengirim...' : 'Kirim Ulang OTP' }}
                                 </button>
                             </div>
                         </template>
